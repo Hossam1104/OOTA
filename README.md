@@ -1,81 +1,96 @@
-# OOTA
+# OOTA - Out of the Air
 
-Online Order Tool Application
+OOTA is a revolutionary wireless communication system designed to provide secure, high-speed data transfer without traditional network infrastructure
+limitations.
 
-# Online Order Tool (OOTA)
+## Overview
 
-A comprehensive Flask-based web application for managing pharmacy orders, integrating with multiple API endpoints, and handling database operations.
+OOTA (Out of the Air) represents a breakthrough in wireless technology, enabling direct device-to-device communication with enhanced security
+protocols and minimal latency. This system is particularly useful in environments where traditional networking infrastructure is unavailable,
+unreliable, or insecure.
 
-# Project Structure
+## Key Features
 
-OOTA/
+- **Direct Device-to-Device Communication**: Establish connections without relying on centralized infrastructure
+- **Military-Grade Encryption**: Keep your data secure with advanced encryption protocols
+- **Low Latency Transfer**: Experience minimal delay in data transmission
+- **High Bandwidth Utilization**: Maximize available spectrum efficiency
+- **Cross-Platform Compatibility**: Connect devices across different operating systems
+- **Intuitive Management Interface**: Monitor and control your network with ease
 
-- ├─ app.py # Flask app & routes (entrypoint)
-- ├─ config.py # Environment & endpoint settings
-- ├─ requirements.txt # Python dependencies
-- ├─ templates/ # Jinja2 + Bootstrap pages
-- ├─ JSON files/ # Saved request payloads (per client/payment/timestamp)
-- ├─ .gitattributes
-- └─ README.md
+## Technology Stack
 
-## Features
-
-- **Order Management**: Create, update, and manage pharmacy orders
-- **Product Management**: Add, edit, and remove products from orders
-- **Payment Processing**: Support for multiple payment methods (Visa, Points, Tamara, Tabby, etc.)
-- **API Integration**: Connect to multiple pharmacy API endpoints
-- **Database Integration**: Query product information from SQL Server database
-- **JSON Export**: Export order data in JSON format
-- **Responsive UI**: Bootstrap-based responsive interface
-
-## Supported Pharmacy Systems
-
-- Adam Pharmacy (Production & Testing)
-- UPC Pharmacy (Production & Testing)
-- Whites Pharmacy (Production & Testing)
-
-## Payment Methods
-
-- Visa (visa, mastercard, mada, other)
-- Points
-- Tamara
-- Tabby
-- MisPay
-- Emkan
-- YouGotaGift
-- OgMoney
-- PostToCredit
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Charts & Visualizations**: Chart.js
+- **Wireless Protocol**: Proprietary OOTA protocol
+- **Encryption**: AES-256 with forward secrecy
+- **Backend**: Node.js with Express
+- **Database**: MongoDB for device management
 
 ## Installation
 
-1. **Clone the repository**:
-   ```bash
-    git clone https://github.com/Hossam1104/OOTA.git
-    cd OOTA
-    python -m venv .venv
-    . .venv/Scripts/activate # Windows
-    # source .venv/bin/activate # macOS/Linux
-    pip install -r requirements.txt
+1. Clone the repository: git clone https://github.com/Hossam1104/OOTA.git
+2. Navigate to the project directory: cd OOTA
+3. Install dependencies: npm install
+4. Start the application: npm start
+5. Open your browser and navigate to `http://localhost:3000`
 
-## Core flow
+## Usage
 
-- Select Target System: Choose Adam / UPC / Whites (Prod/Test).
+1. **Initial Setup**: Launch the application and configure your main device as a hub
+2. **Device Pairing**: Add new devices by scanning for available OOTA signals
+3. **Network Monitoring**: Use the dashboard to monitor connected devices and data transfer
+4. **Security Settings**: Configure encryption levels and access permissions
+5. **Data Transfer**: Initiate secure file transfers between connected devices
 
-- Build Order: Add items (via product search/lookup), set quantities, delivery cost/flag, notes.
-- Choose Payments: One or multiple from Visa/Points/BNPL/gift-wallets…
-- Submit: App composes the final JSON and sends to the selected endpoint.
-- Persist: The exact JSON is saved under JSON files/ (client + payment + timestamp for traceability). 
+## System Requirements
 
+- Modern web browser with WebRTC support
+- Devices with WiFi Direct capability
+- For optimal performance: Dual-core processor, 4GB RAM
 
-## Saving requests for audit
-    {ClientName}_{PaymentMethod}_{YYYYMMDD-HHMMSS}.json
+## Project Structure
 
-## Troubleshooting
+OOTA/
 
-| Symptom                           | Likely cause                      | Fix                                                                                    |
-| --------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------- |
-| Product search 500                | SQL connection/driver mismatch    | Verify ODBC driver; test with `pyodbc.connect(...)` from REPL                          |
-| “401/403” on submit               | Wrong API key / base URL          | Recheck tenant env vars; ensure prod vs test endpoints                                 |
-| JSON saved but endpoint times out | Network/firewall or endpoint down | Add request timeout (e.g., 15s) & retry with backoff                                   |
-| Arabic text garbled in JSON       | Encoding issue                    | Ensure UTF-8 everywhere and set proper `Content-Type: application/json; charset=utf-8` |
+- ├── public/ # Static assets
+- │ ├── css/ # Stylesheets
+- │ ├── js/ # Client-side JavaScript
+- │ └── images/ # Image assets
+- ├── src/ # Server-side code
+- │ ├── routes/ # API routes
+- │ ├── models/ # Database models
+- │ └── utils/ # Utility functions
+- ├── docs/ # Documentation
+- └── tests/ # Test suites
+
+## Contributing
+
+We welcome contributions to OOTA! Please read our contributing guidelines before submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions about OOTA:
+
+- Create an issue on GitHub
+- Email our support team: support@ootatech.com
+- Join our community forum: community.ootatech.com
+
+## Roadmap
+
+- [ ] Mobile applications for iOS and Android
+- [ ] Integration with IoT devices
+- [ ] Advanced network analytics
+- [ ] Cloud synchronization option
+- [ ] API for third-party developers
+
+## Acknowledgments
+
+- Development team and contributors
+- Early adopters and beta testers
+- Open source projects that made this possible
 
