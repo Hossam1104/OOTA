@@ -18,16 +18,28 @@ from config import API_URLS, DEFAULT_API_ENDPOINT, PAYMENT_METHODS, PAYMENT_STAT
 # Database connection function
 def get_db_connection():
     try:
-        conn = pyodbc.connect(
-            'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=.;'  # Database server
-            'DATABASE=RMSCashierSrv;'  # Database name
-            'UID=sa;'  # Username
-            'PWD=P@ssw0rd'  # Password
+        # Use session-stored config or defaults
+        db_config = session.get('db_config', {
+            'server': '.',
+            'database': 'RMSCashierSrv',
+            'username': 'sa',
+            'password': 'P@ssw0rd'
+        })
+
+        conn_str = (
+            f'DRIVER={{ODBC Driver 18 for SQL Server}};'
+            f'SERVER={db_config["server"]};'
+            f'DATABASE={db_config["database"]};'
+            f'UID={db_config["username"]};'
+            f'PWD={db_config["password"]}'
         )
+
+        conn = pyodbc.connect(conn_str)
         return conn
+
     except Exception as e:
         print(f"Database connection error: {str(e)}")
+        flash(f'Database connection error: {str(e)}', 'danger')
         return None
 
 
@@ -712,7 +724,100 @@ def update_payment(index):
 
     except Exception as e:
         flash(f'Error updating payment method: {str(e)}', 'danger')
+
         return redirect(url_for('payment_methods'))
+
+
+@app.route('/test-single-endpoint', methods=['POST'])
+def test_single_endpoint():
+    try:
+        data = request.get_json()
+        url = data['url']
+        name = data['name']
+
+        from urllib.parse import urlparse
+        import socket
+
+        parsed = urlparse(url)
+        host = parsed.hostname
+        port = parsed.port or (80 if parsed.scheme == 'http' else 443)
+
+        # Test connection
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(3)
+        result = sock.connect_ex((host, port))
+        sock.close()
+
+        return jsonify({
+            'status': 'Online' if result == 0 else 'Offline',
+            'name': name,
+            'url': url
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'Error', 'error': str(e)}), 500
+
+
+@app.route('/test-database-connection', methods=['POST'])
+def test_database_connection():
+    try:
+        if request.is_json:
+            data = request.get_json()
+            server = data.get('server', '.')
+            database = data.get('database', 'RMSCashierSrv')
+            username = data.get('username', 'sa')
+            password = data.get('password', 'P@ssw0rd')
+        else:
+            server = request.form.get('server', '.')
+            database = request.form.get('database', 'RMSCashierSrv')
+            username = request.form.get('username', 'sa')
+            password = request.form.get('password', 'P@ssw0rd')
+
+        # Test connection
+        conn_str = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+        conn = pyodbc.connect(conn_str)
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'message': 'Database connection successful!'
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Database connection failed: {str(e)}'
+        })
+
+
+@app.route('/add-product-from-db', methods=['POST'])
+def add_product_from_db():
+    try:
+        data = request.get_json()
+
+        product = {
+            "item_code": data['item_code'],
+            "item_name": data['item_name'],
+            "quantity": 1.0,  # Default quantity
+            "unit_price": float(data['unit_price']),
+            "vat_percentage": float(data['vat_percentage']),
+            "row_total_discount": 0.0,
+            "total_vat_amount": float(data['unit_price']) * (float(data['vat_percentage']) / 100),
+            "row_net_total": float(data['unit_price']) + (float(data['unit_price']) * (float(data['vat_percentage']) / 100)),
+            "unit_vat_amount": float(data['unit_price']) * (float(data['vat_percentage']) / 100),
+            "offer_code": "",
+            "offer_message": ""
+        }
+
+        products = session.get('products', [])
+        products.append(product)
+        session['products'] = products
+        session['saved_products'] = products
+
+        return jsonify({'success': True, 'message': 'Product added successfully!'})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 def save_json_file(order_data):

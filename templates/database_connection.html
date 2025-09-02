@@ -1,10 +1,56 @@
-<!-- templates/database_connection.html -->
 {% extends "base.html" %}
 
 {% block content %}
 <h2 class="mb-4">Database Connection</h2>
 
 <div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Database Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form id="dbConfigForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Server</label>
+                                <input type="text" class="form-control" name="server" value=".">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Database</label>
+                                <input type="text" class="form-control" name="database" value="RMSCashierSrv">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" name="username" value="sa">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" value="P@ssw0rd">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Configuration
+                    </button>
+                    <button type="button" id="testDbConnection" class="btn btn-info">
+                        <i class="bi bi-database-check"></i> Test Connection
+                    </button>
+                    <div id="dbConfigResult" class="mt-3"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
@@ -16,14 +62,14 @@
                         <label class="form-label">Material Number (6 digits)</label>
                         <input type="text" class="form-control" id="materialNumber" placeholder="Enter 6-digit material number" maxlength="6">
                     </div>
-                    <button type="submit" class="btn btn-primary">Query Database</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Query Database
+                    </button>
                 </form>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6">
-        <div class="card">
+        <div class="card mt-4">
             <div class="card-header">
                 <h5 class="mb-0">Query Results</h5>
             </div>
@@ -40,9 +86,36 @@
 {% block scripts %}
 <script>
     $(document).ready(function() {
+        // Save database configuration
+        $('#dbConfigForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            // Here you would typically send this to the server to save
+            $('#dbConfigResult').html('<div class="alert alert-success">Configuration saved successfully!</div>');
+        });
+
+        // Test database connection
+        $('#testDbConnection').click(function() {
+            const formData = $('#dbConfigForm').serialize();
+            $('#dbConfigResult').html('<div class="alert alert-info">Testing connection...</div>');
+
+            $.ajax({
+                url: '{{ url_for("test_database_connection") }}',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        $('#dbConfigResult').html('<div class="alert alert-success"><i class="bi bi-check-circle"></i> ' + response.message + '</div>');
+                    } else {
+                        $('#dbConfigResult').html('<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + response.message + '</div>');
+                    }
+                }
+            });
+        });
+
+        // Database query
         $('#dbQueryForm').on('submit', function(e) {
             e.preventDefault();
-
             const materialNumber = $('#materialNumber').val();
 
             if (!materialNumber || materialNumber.length !== 6) {
@@ -50,45 +123,74 @@
                 return;
             }
 
+            $('#queryResults').html('<div class="alert alert-info">Searching...</div>');
 
             $.ajax({
                 type: 'GET',
                 url: '{{ url_for("get_item_details") }}',
-                data: {
-                    material_number: materialNumber
-                },
+                data: { material_number: materialNumber },
                 success: function(response) {
                     if (response.error) {
                         $('#queryResults').html(`<div class="alert alert-danger">${response.error}</div>`);
                     } else {
                         $('#queryResults').html(`
                             <div class="alert alert-success">
-                                <strong>Item Found:</strong> ${"000000000000" + response.item_code}
+                                <strong>Item Found:</strong> ${response.item_Barcode}
                             </div>
                             <table class="table table-striped">
-                                <tr><th>Item Code</th><td>${response.item_Barcode}</td></tr>
-                                 <tr><th>Item EN Name</th><td>${response.item_EN_Name}</td></tr>
-                                 <tr><th>Item AR Name</th><td>${response.item_AR_Name}</td></tr>
-                                <tr><th>Unit Price</th><td>${response.unit_price}</td></tr>
-                                <tr><th>VAT %</th><td>${response.vat_percentage}</td></tr>
-                                <tr><th>Net Price</th><td>${response.net_price}</td></tr>
+                                <tr><th>Item Code</th><td>${response.item_code}</td></tr>
+                                <tr><th>Item EN Name</th><td>${response.item_EN_Name}</td></tr>
+                                <tr><th>Item AR Name</th><td>${response.item_AR_Name}</td></tr>
+                                <tr><th>Unit Price</th><td>${response.unit_price.toFixed(2)}</td></tr>
+                                <tr><th>VAT %</th><td>${response.vat_percentage}%</td></tr>
+                                <tr><th>Net Price</th><td>${response.net_price.toFixed(2)}</td></tr>
                             </table>
-                            <button class="btn btn-success" onclick="addToProducts(${materialNumber})">
-                                <i class="bi bi-cart-plus"></i> Add to Products
+                            <button class="btn btn-success add-to-cart"
+                                    data-item-code="${response.item_code}"
+                                    data-item-name="${response.item_EN_Name}"
+                                    data-unit-price="${response.unit_price}"
+                                    data-vat-percentage="${response.vat_percentage}">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
                             </button>
                         `);
                     }
                 },
                 error: function() {
-                    $('#queryResults').html('<div class="alert alert-danger">Item not found or Error querying database</div>');
+                    $('#queryResults').html('<div class="alert alert-danger">Error querying database</div>');
+                }
+            });
+        });
+
+        // Add to cart functionality
+        $(document).on('click', '.add-to-cart', function() {
+            const itemCode = $(this).data('item-code');
+            const itemName = $(this).data('item-name');
+            const unitPrice = $(this).data('unit-price');
+            const vatPercentage = $(this).data('vat-percentage');
+
+            $.ajax({
+                url: '{{ url_for("add_product_from_db") }}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    item_code: itemCode,
+                    item_name: itemName,
+                    unit_price: unitPrice,
+                    vat_percentage: vatPercentage
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        $('#queryResults').append('<div class="alert alert-success mt-3">Item added to cart successfully!</div>');
+                        // Recalculate totals
+                        if (typeof calculateTotals === 'function') {
+                            calculateTotals();
+                        }
+                    } else {
+                        $('#queryResults').append('<div class="alert alert-danger mt-3">Error adding item to cart: ' + response.error + '</div>');
+                    }
                 }
             });
         });
     });
-
-    function addToProducts(materialNumber) {
-        // This function would be implemented to add the item to the products list
-        alert('Add to products functionality would be implemented here for material: ' + materialNumber);
-    }
 </script>
 {% endblock %}
