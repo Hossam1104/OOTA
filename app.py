@@ -1,119 +1,18 @@
 import json
 import os
+import socket
 from datetime import datetime
+from urllib.parse import urlparse
 
-import pyodbc  # For database connection
+import pyodbc
 import requests
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
 
-# API URLs with descriptive names
-API_URLS = {
-    "Adam Pharmacy - Production": "http://10.2.1.6/RmsMainServerApi/api/Order/CreateAndAssignOrder",
-    "Adam Pharmacy - Testing": "http://10.2.1.6:8080/RmsMainServerApi/api/Order/CreateAndAssignOrder",
-    "UPC Pharmacy - Production": "http://10.10.10.181/RmsMainServerApi/api/Order/CreateAndAssignOrder",
-    "UPC Pharmacy - Testing": "http://10.10.9.181:8080/RmsMainServerApi/api/Order/CreateAndAssignOrder",
-    "Whites Pharmacy - Production": "https://10.10.20.200/Gateway/RmsMainServerApi/api/Order/CreateAndAssignOrder",
-    "Whites Pharmacy - Testing": "http://10.10.20.126:8090/RmsMainServerApi/api/Order/CreateAndAssignOrder"
-}
-
-# Default API endpoint
-DEFAULT_API_ENDPOINT = "UPC Pharmacy - Testing"
-
-# Updated Payment options
-PAYMENT_METHODS = ["Visa", "Points", "Tamara", "Tabby", "MisPay", "Emkan", "YouGotaGift", "OgMoney", "PostToCredit"]
-PAYMENT_STATUSES = ["done_payment", "partially_paid", "not_payment", "failed_payment", "refunded_payment"]
-PAYMENT_OPTIONS = {
-    "Visa": ["visa", "mastercard", "mada", "other"],
-    "Points": ["points"],
-    "Tamara": ["tamara"],
-    "Tabby": ["tabby"],
-    "MisPay": ["MisPay"],
-    "Emkan": ["Emkan"],
-    "YouGotaGift": ["YouGotaGift"],
-    "OgMoney": ["OgMoney"],
-    "PostToCredit": ["PostToCredit"]
-}
-
-# Updated Default data
-DEFAULT_DATA = {
-    "branch_code": "2000",
-    "order_code": "Order_1",
-    "parent_order_code": "",
-    "order_creation_date": "2025-05-18T12:23:10.323Z",
-    "order_notes": "Don't Ring the bell",
-    "order_product_total_value": 73.75,
-    "is_delivery": 1,
-    "order_delivery_cost": 10.0,
-    "order_total_discount": 45.0,
-    "order_final_total_value": 83.75,
-    "order_payment_method": "PostToCredit",
-    "order_status": "new",
-    "client_country_code": "966",
-    "client_phone": "556028080",
-    "client_first_name": "Hossam",
-    "client_middle_name": "Mohamed",
-    "client_last_name": "Abdallah",
-    "client_email": "Hossam.Mohamed@dbsmena.com",
-    "client_birthdate": "1989-04-11T12:23:10.323Z",
-    "client_gender": "Male",
-    "order_address": "Tabarak City",
-    "address_code": "1104",
-    "order_country_code": "966",
-    "order_phone": "556028080",
-    "order_payment_status": "not_payment",
-    "order_gps": [29.980759787217856, 31.33627436833347],
-    "delivery_date": "2025-09-01",
-    "delivery_from_time": "12:23:10.323",
-    "delivery_to_time": "03:23:10",
-    "shipping_address_2": "Cairo",
-    "fullfilment_plant": "1000",
-    "order_products": [
-        {
-            "item_code": "000000000000021252",
-            "item_name": "J&J Tb Reach Interdntl Full Me",
-            "quantity": 2.0,
-            "unit_price": 11.00,
-            "unit_vat_amount": 0.0,
-            "total_vat_amount": 0.0,
-            "vat_percentage": 0.0,
-            "offer_code": "",
-            "offer_message": "",
-            "row_total_discount": 0.0,
-            "row_net_total": 22.0
-        },
-        {
-            "item_code": "000000000000021241",
-            "item_name": "The Balm Meet Matt Hughes - Brilliant",
-            "quantity": 1.0,
-            "unit_price": 90.00,
-            "unit_vat_amount": 6.75,
-            "total_vat_amount": 6.75,
-            "vat_percentage": 0.15,
-            "offer_code": "000000000011",
-            "offer_message": "Buy One Get One",
-            "row_total_discount": 45.0,
-            "row_net_total": 51.75
-        }
-    ],
-    "payment_methods_with_options": [
-        {
-            "payment_method": "PostToCredit",
-            "payment_amount": 83.75,
-            "transaction_id": "",
-            "payment_option": "",
-            "card_name": "null",
-            "bank_code": "null",
-            "option_commission": 0.0,
-            "credit_customer_info": {
-                "customer_number": "0057000096",
-                "customer_name": "Moller Customer"
-            }
-        }
-    ]
-}
+# Import configuration
+from config import API_URLS, DEFAULT_API_ENDPOINT, PAYMENT_METHODS, PAYMENT_STATUSES, PAYMENT_OPTIONS, DEFAULT_DATA
 
 
 # Database connection function
@@ -135,27 +34,18 @@ def get_db_connection():
 # Initialize session data
 @app.before_request
 def before_request():
+    session_keys = ['order_data', 'products', 'payments', 'api_endpoint']
+    saved_keys = ['saved_order_data', 'saved_products', 'saved_payments']
+
+    # Initialize session data with defaults or saved values
     if 'order_data' not in session:
-        # Try to load from saved data, otherwise use default
-        saved_data = session.get('saved_order_data', {})
-        if saved_data:
-            session['order_data'] = saved_data
-        else:
-            session['order_data'] = DEFAULT_DATA.copy()
+        session['order_data'] = session.get('saved_order_data', DEFAULT_DATA.copy())
 
     if 'products' not in session:
-        saved_products = session.get('saved_products', [])
-        if saved_products:
-            session['products'] = saved_products
-        else:
-            session['products'] = DEFAULT_DATA['order_products'].copy()
+        session['products'] = session.get('saved_products', DEFAULT_DATA['order_products'].copy())
 
     if 'payments' not in session:
-        saved_payments = session.get('saved_payments', [])
-        if saved_payments:
-            session['payments'] = saved_payments
-        else:
-            session['payments'] = DEFAULT_DATA['payment_methods_with_options'].copy()
+        session['payments'] = session.get('saved_payments', DEFAULT_DATA['payment_methods_with_options'].copy())
 
     if 'api_endpoint' not in session:
         session['api_endpoint'] = DEFAULT_API_ENDPOINT
@@ -206,20 +96,26 @@ def database_connection():
 @app.route('/add-product', methods=['POST'])
 def add_product():
     try:
+        quantity = float(request.form.get('quantity', 0))
+        unit_price = float(request.form.get('unit_price', 0))
+        vat_percentage = float(request.form.get('vat_percentage', 0))
+        discount = float(request.form.get('discount', 0))
+
+        # Calculate values
+        subtotal = quantity * unit_price
+        vat_amount = subtotal * (vat_percentage / 100)
+        net_total = subtotal - discount + vat_amount
+
         product = {
             "item_code": request.form.get('item_code'),
             "item_name": request.form.get('item_name'),
-            "quantity": float(request.form.get('quantity', 0)),
-            "unit_price": float(request.form.get('unit_price', 0)),
-            "vat_percentage": float(request.form.get('vat_percentage', 0)),
-            "row_total_discount": float(request.form.get('discount', 0)),
-            "total_vat_amount": float(request.form.get('vat_percentage', 0)) * float(request.form.get('quantity', 0)) * float(
-                request.form.get('unit_price', 0)) / 100,
-            "row_net_total": (float(request.form.get('quantity', 0)) * float(request.form.get('unit_price', 0)) - float(
-                request.form.get('discount', 0))) +
-                             (float(request.form.get('vat_percentage', 0)) * float(request.form.get('quantity', 0)) * float(
-                                 request.form.get('unit_price', 0)) / 100),
-            "unit_vat_amount": 0.0,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "vat_percentage": vat_percentage,
+            "row_total_discount": discount,
+            "total_vat_amount": vat_amount,
+            "row_net_total": net_total,
+            "unit_vat_amount": vat_amount / quantity if quantity > 0 else 0,
             "offer_code": request.form.get('offer_code', ''),
             "offer_message": request.form.get('offer_message', '')
         }
@@ -227,7 +123,7 @@ def add_product():
         products = session.get('products', [])
         products.append(product)
         session['products'] = products
-        session['saved_products'] = products  # Save for next session
+        session['saved_products'] = products
 
         flash('Product added successfully!', 'success')
         return redirect(url_for('order_details'))
@@ -244,7 +140,7 @@ def remove_product(index):
         if 0 <= index < len(products):
             products.pop(index)
             session['products'] = products
-            session['saved_products'] = products  # Save for next session
+            session['saved_products'] = products
             flash('Product removed successfully!', 'success')
         else:
             flash('Invalid product index!', 'danger')
@@ -277,14 +173,14 @@ def add_payment():
         payments = session.get('payments', [])
         payments.append(payment)
         session['payments'] = payments
-        session['saved_payments'] = payments  # Save for next session
+        session['saved_payments'] = payments
 
         # If payment status is done_payment, update order payment status
         if payment['payment_status'] == 'done_payment':
             order_data = session.get('order_data', DEFAULT_DATA.copy())
             order_data['order_payment_status'] = 'done_payment'
             session['order_data'] = order_data
-            session['saved_order_data'] = order_data  # Save for next session
+            session['saved_order_data'] = order_data
 
         flash('Payment method added successfully!', 'success')
         return redirect(url_for('payment_methods'))
@@ -301,7 +197,7 @@ def remove_payment(index):
         if 0 <= index < len(payments):
             payments.pop(index)
             session['payments'] = payments
-            session['saved_payments'] = payments  # Save for next session
+            session['saved_payments'] = payments
             flash('Payment method removed successfully!', 'success')
         else:
             flash('Invalid payment method index!', 'danger')
@@ -344,7 +240,7 @@ def update_order():
         order_data['client_gender'] = request.form.get('gender', order_data['client_gender'])
 
         session['order_data'] = order_data
-        session['saved_order_data'] = order_data  # Save for next session
+        session['saved_order_data'] = order_data
 
         flash('Order details updated successfully!', 'success')
         return redirect(url_for('order_details'))
@@ -729,20 +625,26 @@ def update_product(index):
                 return jsonify({'error': 'Invalid product index'}), 404
 
         # POST request - update product
+        quantity = float(request.form.get('quantity', 0))
+        unit_price = float(request.form.get('unit_price', 0))
+        vat_percentage = float(request.form.get('vat_percentage', 0))
+        discount = float(request.form.get('discount', 0))
+
+        # Calculate values
+        subtotal = quantity * unit_price
+        vat_amount = subtotal * (vat_percentage / 100)
+        net_total = subtotal - discount + vat_amount
+
         product = {
             "item_code": request.form.get('item_code'),
             "item_name": request.form.get('item_name'),
-            "quantity": float(request.form.get('quantity', 0)),
-            "unit_price": float(request.form.get('unit_price', 0)),
-            "vat_percentage": float(request.form.get('vat_percentage', 0)),
-            "row_total_discount": float(request.form.get('discount', 0)),
-            "total_vat_amount": float(request.form.get('vat_percentage', 0)) * float(request.form.get('quantity', 0)) * float(
-                request.form.get('unit_price', 0)) / 100,
-            "row_net_total": (float(request.form.get('quantity', 0)) * float(request.form.get('unit_price', 0)) - float(
-                request.form.get('discount', 0))) +
-                             (float(request.form.get('vat_percentage', 0)) * float(request.form.get('quantity', 0)) * float(
-                                 request.form.get('unit_price', 0)) / 100),
-            "unit_vat_amount": 0.0,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "vat_percentage": vat_percentage,
+            "row_total_discount": discount,
+            "total_vat_amount": vat_amount,
+            "row_net_total": net_total,
+            "unit_vat_amount": vat_amount / quantity if quantity > 0 else 0,
             "offer_code": request.form.get('offer_code', ''),
             "offer_message": request.form.get('offer_message', '')
         }
@@ -864,49 +766,46 @@ def prepare_order_data():
         elif '.' in delivery_to_time:  # HH:MM:SS.mmm format
             delivery_to_time = delivery_to_time.split('.')[0]  # Remove milliseconds
 
-            # Remove None values
+    # Prepare final order data with the new structure
+    final_order_data = {
+        "branch_code": order_data.get('branch_code', ''),
+        "order_code": order_data.get('order_code', ''),
+        "parent_order_code": order_data.get('parent_order_code', ''),
+        "order_creation_date": datetime.now().isoformat() + 'Z',  # ISO format with Zulu time
+        "order_notes": order_data.get('order_notes', "Don't Ring the bell"),
+        "order_product_total_value": order_product_total_value,
+        "is_delivery": order_data.get('is_delivery', 1),
+        "order_delivery_cost": delivery_cost,
+        "order_total_discount": order_total_discount,
+        "order_final_total_value": order_final_total_value,
+        "order_payment_method": ",".join([payment.get('payment_method', '') for payment in payments]),
+        "order_status": order_data.get('order_status', 'new'),
+        "client_country_code": order_data.get('client_country_code', '966'),
+        "client_phone": order_data.get('client_phone', ''),
+        "client_first_name": order_data.get('client_first_name', ''),
+        "client_middle_name": order_data.get('client_middle_name', ''),
+        "client_last_name": order_data.get('client_last_name', ''),
+        "client_email": order_data.get('client_email', ''),
+        "client_birthdate": order_data.get('client_birthdate', ''),
+        "client_gender": order_data.get('client_gender', 'Male'),
+        "order_address": order_data.get('order_address', ''),
+        "address_code": order_data.get('address_code', ''),
+        "order_country_code": order_data.get('order_country_code', ''),
+        "order_phone": order_data.get('order_phone', ''),
+        "order_payment_status": order_data.get('order_payment_status', 'not_payment'),
+        "order_gps": order_data.get('order_gps', [21.779006345949554, 39.08578576461103]),
+        "order_products": products,
+        "payment_methods_with_options": payments,
+        "delivery_date": order_data.get('delivery_date', ''),
+        "delivery_from_time": delivery_from_time,
+        "delivery_to_time": delivery_to_time,
+        "shipping_address_2": order_data.get('shipping_address_2', ''),
+        "fullfilment_plant": order_data.get('fullfilment_plant', '')
+    }
 
+    final_order_data = {k: v for k, v in final_order_data.items() if v is not None}
 
-# Prepare final order data with the new structure
-final_order_data = {
-    "branch_code": order_data.get('branch_code', ''),
-    "order_code": order_data.get('order_code', ''),
-    "parent_order_code": order_data.get('parent_order_code', ''),
-    "order_creation_date": datetime.now().isoformat() + 'Z',  # ISO format with Zulu time
-    "order_notes": order_data.get('order_notes', "Don't Ring the bell"),
-    "order_product_total_value": order_product_total_value,
-    "is_delivery": order_data.get('is_delivery', 1),
-    "order_delivery_cost": delivery_cost,
-    "order_total_discount": order_total_discount,
-    "order_final_total_value": order_final_total_value,
-    "order_payment_method": ",".join([payment.get('payment_method', '') for payment in payments]),
-    "order_status": order_data.get('order_status', 'new'),
-    "client_country_code": order_data.get('client_country_code', '966'),
-    "client_phone": order_data.get('client_phone', ''),
-    "client_first_name": order_data.get('client_first_name', ''),
-    "client_middle_name": order_data.get('client_middle_name', ''),
-    "client_last_name": order_data.get('client_last_name', ''),
-    "client_email": order_data.get('client_email', ''),
-    "client_birthdate": order_data.get('client_birthdate', ''),
-    "client_gender": order_data.get('client_gender', 'Male'),
-    "order_address": order_data.get('order_address', ''),
-    "address_code": order_data.get('address_code', ''),
-    "order_country_code": order_data.get('order_country_code', ''),
-    "order_phone": order_data.get('order_phone', ''),
-    "order_payment_status": order_data.get('order_payment_status', 'not_payment'),
-    "order_gps": order_data.get('order_gps', [21.779006345949554, 39.08578576461103]),
-    "order_products": products,
-    "payment_methods_with_options": payments,
-    "delivery_date": order_data.get('delivery_date', ''),
-    "delivery_from_time": delivery_from_time,
-    "delivery_to_time": delivery_to_time,
-    "shipping_address_2": order_data.get('shipping_address_2', ''),
-    "fullfilment_plant": order_data.get('fullfilment_plant', '')
-}
-
-final_order_data = {k: v for k, v in final_order_data.items() if v is not None}
-
-return final_order_data
+    return final_order_data
 
 
 def validate_order_data(order_data):
@@ -937,9 +836,6 @@ def test_endpoints():
     results = {}
     for name, url in API_URLS.items():
         try:
-            from urllib.parse import urlparse
-            import socket
-
             parsed = urlparse(url)
             host = parsed.hostname
             port = parsed.port or (80 if parsed.scheme == 'http' else 443)
@@ -985,4 +881,4 @@ def inject_session_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)  # Changed to port 5001
+    app.run(debug=True, port=5001)
