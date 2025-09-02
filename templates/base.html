@@ -505,6 +505,25 @@
 
 <!-- Main Content -->
 <div class="main-content">
+    <!-- Theme Selector at top right -->
+    <div class="theme-selector" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi bi-palette"></i> Themes
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item theme-option" href="#" data-theme="blue">Blue Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="green">Green Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="purple">Purple Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="orange">Orange Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="red">Red Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="pink">Pink Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="teal">Teal Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="cyan">Cyan Theme</a></li>
+                <li><a class="dropdown-item theme-option" href="#" data-theme="indigo">Indigo Theme</a></li>
+            </ul>
+        </div>
+    </div>
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

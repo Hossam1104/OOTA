@@ -1,81 +1,99 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="mb-4">Database Connection</h2>
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="mb-4"><i class="bi bi-database me-2"></i>Database Connection</h2>
+    </div>
+</div>
 
 <div class="row">
+    <!-- Database Configuration -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Database Configuration</h5>
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Database Configuration</h5>
             </div>
             <div class="card-body">
                 <form id="dbConfigForm">
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Server</label>
-                                <input type="text" class="form-control" name="server" value=".">
-                            </div>
+                            <label class="form-label">Server</label>
+                            <input type="text" class="form-control" name="server" value=".">
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Database</label>
-                                <input type="text" class="form-control" name="database" value="RMSCashierSrv">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" name="username" value="sa">
-                            </div>
+                            <label class="form-label">Database</label>
+                            <input type="text" class="form-control" name="database" value="RMSCashierSrv">
                         </div>
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" name="password" value="P@ssw0rd">
-                            </div>
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" value="sa">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" value="P@ssw0rd">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Save Configuration
-                    </button>
-                    <button type="button" id="testDbConnection" class="btn btn-info">
-                        <i class="bi bi-database-check"></i> Test Connection
-                    </button>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-check-circle"></i> Save Configuration
+                        </button>
+                        <button type="button" id="testDbConnection" class="btn btn-info">
+                            <i class="bi bi-database-check"></i> Test Connection
+                        </button>
+                    </div>
                     <div id="dbConfigResult" class="mt-3"></div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Database Query with Filters -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Database Query</h5>
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-search me-2"></i>Database Query</h5>
             </div>
             <div class="card-body">
                 <form id="dbQueryForm">
-                    <div class="mb-3">
-                        <label class="form-label">Material Number (6 digits)</label>
-                        <input type="text" class="form-control" id="materialNumber" placeholder="Enter 6-digit material number" maxlength="6">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Material Number (6 digits)*</label>
+                            <input type="text" class="form-control" id="materialNumber" placeholder="023983" maxlength="6" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Number</label>
+                            <input type="text" class="form-control" id="customerNumber" placeholder="Optional">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SAP Tax Code</label>
+                            <input type="text" class="form-control" id="sapTaxCode" placeholder="Optional">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SAP Material Generic</label>
+                            <input type="text" class="form-control" id="sapMatGeneric" placeholder="Optional">
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-search"></i> Query Database
-                    </button>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-search"></i> Query Database
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
 
+        <!-- Query Results -->
         <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">Query Results</h5>
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-list me-2"></i>Query Results</h5>
             </div>
             <div class="card-body">
                 <div id="queryResults" class="text-muted">
-                    No results yet. Enter a material number and click "Query Database".
+                    <div class="text-center py-4">
+                        <i class="bi bi-database-slash display-4 text-muted"></i>
+                        <p class="mt-3">No results yet. Enter search criteria and click "Query Database".</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,9 +107,8 @@
         // Save database configuration
         $('#dbConfigForm').on('submit', function(e) {
             e.preventDefault();
-            const formData = $(this).serialize();
-            // Here you would typically send this to the server to save
             $('#dbConfigResult').html('<div class="alert alert-success">Configuration saved successfully!</div>');
+            setTimeout(() => $('#dbConfigResult').empty(), 3000);
         });
 
         // Test database connection
@@ -109,43 +126,68 @@
                     } else {
                         $('#dbConfigResult').html('<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + response.message + '</div>');
                     }
+                },
+                error: function() {
+                    $('#dbConfigResult').html('<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Error testing database connection</div>');
                 }
             });
         });
 
-        // Database query
+        // Database query with filters
         $('#dbQueryForm').on('submit', function(e) {
             e.preventDefault();
             const materialNumber = $('#materialNumber').val();
+            const customerNumber = $('#customerNumber').val();
+            const sapTaxCode = $('#sapTaxCode').val();
+            const sapMatGeneric = $('#sapMatGeneric').val();
 
             if (!materialNumber || materialNumber.length !== 6) {
-                alert('Please enter a 6-digit material number');
+                alert('Please enter a valid 6-digit material number');
                 return;
             }
 
-            $('#queryResults').html('<div class="alert alert-info">Searching...</div>');
+            $('#queryResults').html(`
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Searching database...</p>
+                </div>
+            `);
 
             $.ajax({
                 type: 'GET',
                 url: '{{ url_for("get_item_details") }}',
-                data: { material_number: materialNumber },
+                data: {
+                    material_number: materialNumber,
+                    customer_number: customerNumber,
+                    sap_tax_code: sapTaxCode,
+                    sap_mat_generic: sapMatGeneric
+                },
                 success: function(response) {
                     if (response.error) {
-                        $('#queryResults').html(`<div class="alert alert-danger">${response.error}</div>`);
+                        $('#queryResults').html(`
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle"></i> ${response.error}
+                            </div>
+                        `);
                     } else {
                         $('#queryResults').html(`
                             <div class="alert alert-success">
-                                <strong>Item Found:</strong> ${response.item_Barcode}
+                                <i class="bi bi-check-circle"></i> <strong>Item Found!</strong>
                             </div>
-                            <table class="table table-striped">
-                                <tr><th>Item Code</th><td>${response.item_code}</td></tr>
-                                <tr><th>Item EN Name</th><td>${response.item_EN_Name}</td></tr>
-                                <tr><th>Item AR Name</th><td>${response.item_AR_Name}</td></tr>
-                                <tr><th>Unit Price</th><td>${response.unit_price.toFixed(2)}</td></tr>
-                                <tr><th>VAT %</th><td>${response.vat_percentage}%</td></tr>
-                                <tr><th>Net Price</th><td>${response.net_price.toFixed(2)}</td></tr>
-                            </table>
-                            <button class="btn btn-success add-to-cart"
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr><th>Item Code</th><td>${response.item_code}</td></tr>
+                                    <tr><th>Barcode</th><td>${response.item_Barcode}</td></tr>
+                                    <tr><th>English Name</th><td>${response.item_EN_Name}</td></tr>
+                                    <tr><th>Arabic Name</th><td>${response.item_AR_Name}</td></tr>
+                                    <tr><th>Unit Price</th><td>${response.unit_price.toFixed(2)} SAR</td></tr>
+                                    <tr><th>VAT %</th><td>${response.vat_percentage}%</td></tr>
+                                    <tr><th>Net Price</th><td>${response.net_price.toFixed(2)} SAR</td></tr>
+                                </table>
+                            </div>
+                            <button class="btn btn-success add-to-cart w-100"
                                     data-item-code="${response.item_code}"
                                     data-item-name="${response.item_EN_Name}"
                                     data-unit-price="${response.unit_price}"
@@ -155,8 +197,12 @@
                         `);
                     }
                 },
-                error: function() {
-                    $('#queryResults').html('<div class="alert alert-danger">Error querying database</div>');
+                error: function(xhr, status, error) {
+                    $('#queryResults').html(`
+                        <div class="alert alert-danger">
+                            <i class="bi bi-x-circle"></i> Error querying database: ${error}
+                        </div>
+                    `);
                 }
             });
         });
@@ -180,14 +226,29 @@
                 }),
                 success: function(response) {
                     if (response.success) {
-                        $('#queryResults').append('<div class="alert alert-success mt-3">Item added to cart successfully!</div>');
+                        $('#queryResults').append(`
+                            <div class="alert alert-success mt-3">
+                                <i class="bi bi-check-circle"></i> ${response.message}
+                            </div>
+                        `);
                         // Recalculate totals
                         if (typeof calculateTotals === 'function') {
                             calculateTotals();
                         }
                     } else {
-                        $('#queryResults').append('<div class="alert alert-danger mt-3">Error adding item to cart: ' + response.error + '</div>');
+                        $('#queryResults').append(`
+                            <div class="alert alert-danger mt-3">
+                                <i class="bi bi-x-circle"></i> ${response.error}
+                            </div>
+                        `);
                     }
+                },
+                error: function() {
+                    $('#queryResults').append(`
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-x-circle"></i> Error adding item to cart
+                        </div>
+                    `);
                 }
             });
         });

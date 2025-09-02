@@ -545,6 +545,10 @@ def check_drivers():
 def get_item_details():
     try:
         material_number = request.args.get('material_number', type=str)
+        customer_number = request.args.get('customer_number', '', type=str)
+        sap_tax_code = request.args.get('sap_tax_code', '', type=str)
+        sap_mat_generic = request.args.get('sap_mat_generic', '', type=str)
+
         if not material_number or not material_number.isdigit() or len(material_number) != 6:
             return jsonify({'error': 'Material number must be 6 digits'}), 400
 
@@ -554,105 +558,65 @@ def get_item_details():
 
         cursor = conn.cursor()
 
-        query = r"""
-        -- Input
-        DECLARE @MaterialNumber VARCHAR(6) = ?;
-        DECLARE @SapTaxCodeFilter VARCHAR(MAX) = '';
-        DECLARE @FilterToDate DATETIME = GETDATE();
-        DECLARE @DiscountFilterDate DATETIME = GETDATE();
-        DECLARE @CustomerNumber VARCHAR(20) = '';
-        DECLARE @SapMatGenericFilter VARCHAR(50) = '';
-
-        -- Pad to 18 digits (12 zeros + 6 digits)
-        DECLARE @PaddedMaterialNumber VARCHAR(18)
-            = RIGHT(REPLICATE('0', 12) + @MaterialNumber, 18);
-
-        ;WITH ValidDiscounts AS (
-            SELECT *,
-                   ROW_NUMBER() OVER (
-                       PARTITION BY MaterialNumber, Customer
-                       ORDER BY ValidFrom DESC
-                   ) AS rn
-            FROM RmsCashierSrv.dbo.sapMatWithCustDiscount_FltTbl
-            WHERE @DiscountFilterDate BETWEEN ValidFrom AND ValidTo
-                  AND CondPrice IS NOT NULL
-                  AND (@CustomerNumber = '' OR Customer = @CustomerNumber)
-        )
-        SELECT
-            I.Id AS ItemId,
-            RIGHT(I.MaterialNumber, 6) AS MaterialNumber,
-            IUOMB.UniversalBarCode AS ItemBarcode,
+        # Build query dynamically based on provided filters
+        query = """
+        SELECT TOP 1 
+            I.MaterialNumber,
+            IUOMB.UniversalBarCode,
             I.Name AS EnglishName,
             I.NativeName AS ArabicName,
-            I.SapMaterialType AS MaterialType,
-            I.SapMatGeneric,
-            I.SapTaxCode,
-            IUM.IsBase AS IsBaseUnit,
             IP.Price AS UnitPrice,
-            CAST(ROUND(((IP.Price * TT.Rate)/100) + IP.Price, 2) AS DECIMAL(10,2)) AS NetPrice,
-            IUM.Numerator,
-            IUM.Denominator,
-            C.CustomerNumber,
-            C.Name AS CustomerName,
-            D.CondPrice,
-            IP.FromDate AS ValidFrom,
-            IP.ToDate AS ValidTo,
-            TT.Rate AS VatRate
-        FROM RmsCashierSrv.dbo.Items AS I
-        LEFT JOIN RmsCashierSrv.dbo.TaxTypes AS TT 
-            ON I.SapTaxCode = TT.Code
-        INNER JOIN RmsCashierSrv.dbo.ItemUnitOfMeasures AS IUM 
-            ON I.Id = IUM.ItemId
-        INNER JOIN RmsCashierSrv.dbo.ItemUnitOfMeasureBarCodes AS IUOMB 
-            ON IUM.Id = IUOMB.ItemUnitOfMeasureId
-        LEFT JOIN RmsCashierSrv.dbo.ItemPrices AS IP 
-            ON IUM.Id = IP.ItemUnitOfMeasureId
+            TT.Rate AS VatRate,
+            CAST(ROUND(((IP.Price * TT.Rate)/100) + IP.Price, 2) AS DECIMAL(10,2)) AS NetPrice
+        FROM dbo.Items AS I
+        LEFT JOIN dbo.TaxTypes AS TT ON I.SapTaxCode = TT.Code
+        INNER JOIN dbo.ItemUnitOfMeasures AS IUM ON I.Id = IUM.ItemId
+        INNER JOIN dbo.ItemUnitOfMeasureBarCodes AS IUOMB ON IUM.Id = IUOMB.ItemUnitOfMeasureId
+        LEFT JOIN dbo.ItemPrices AS IP ON IUM.Id = IP.ItemUnitOfMeasureId
+        WHERE RIGHT(I.MaterialNumber, 6) = ?
             AND IP.IsActive = 1
             AND IP.Price IS NOT NULL
-            AND (@FilterToDate IS NULL OR IP.ToDate > @FilterToDate)
-        LEFT JOIN (
-            SELECT CustomerNumber, Name
-            FROM RmsCashierSrv.dbo.Customers
-            WHERE IsActive = 1 AND (@CustomerNumber = '' OR CustomerNumber = @CustomerNumber)
-        ) AS C
-            ON C.CustomerNumber = @CustomerNumber
-        LEFT JOIN ValidDiscounts AS D 
-            ON D.MaterialNumber = I.MaterialNumber
-            AND D.Customer = C.CustomerNumber
-            AND D.rn = 1
-        WHERE
-            I.MaterialNumber = @PaddedMaterialNumber
-            AND (@SapTaxCodeFilter = '' OR I.SapTaxCode = @SapTaxCodeFilter)
-            AND (@SapMatGenericFilter = '' OR I.SapMatGeneric = @SapMatGenericFilter)
-            AND IP.Price IS NOT NULL
-        ORDER BY I.Id DESC;
+            AND IP.ToDate > GETDATE()
         """
 
-        try:
-            cursor.execute(query, material_number)
-            row = cursor.fetchone()
+        params = [material_number]
 
-            if not row:
-                return jsonify({'error': 'No item found with this material number'}), 404
+        # Add optional filters
+        if customer_number:
+            query += " AND EXISTS (SELECT 1 FROM dbo.Customers WHERE CustomerNumber = ? AND IsActive = 1)"
+            params.append(customer_number)
 
-            item_details = {
-                'item_code': row[0] if row[0] else f"000000000000{material_number}",
-                'item_Barcode': row[1] if row[1] else f"BC{material_number}",
-                'item_EN_Name': row[2] if row[2] else f"Item {material_number}",
-                'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",
-                'unit_price': float(row[4]) if row[4] else 0.0,
-                'vat_percentage': float(row[5]) if row[5] else 0.0,
-                'net_price': (float(row[4]) if row[4] else 0.0) * (1 + (float(row[5]) if row[5] else 0.0) / 100)
-            }
+        if sap_tax_code:
+            query += " AND I.SapTaxCode = ?"
+            params.append(sap_tax_code)
 
-            conn.close()
-            return jsonify(item_details)
+        if sap_mat_generic:
+            query += " AND I.SapMatGeneric = ?"
+            params.append(sap_mat_generic)
 
-        except pyodbc.Error as e:
-            return jsonify({'error': f'Database query error: {str(e)}'}), 500
+        query += " ORDER BY I.Id DESC"
+
+        cursor.execute(query, params)
+        row = cursor.fetchone()
+
+        if not row:
+            return jsonify({'error': 'No item found with the specified criteria'}), 404
+
+        item_details = {
+            'item_code': row[0] if row[0] else f"000000000000{material_number}",
+            'item_Barcode': row[1] if row[1] else f"BC{material_number}",
+            'item_EN_Name': row[2] if row[2] else f"Item {material_number}",
+            'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",
+            'unit_price': float(row[4]) if row[4] else 0.0,
+            'vat_percentage': float(row[5]) if row[5] else 0.0,
+            'net_price': float(row[6]) if row[6] else 0.0
+        }
+
+        conn.close()
+        return jsonify(item_details)
 
     except Exception as e:
-        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
 
 
 @app.route('/update-product/<int:index>', methods=['GET', 'POST'])
