@@ -18,23 +18,36 @@ from config import API_URLS, DEFAULT_API_ENDPOINT, PAYMENT_METHODS, PAYMENT_STAT
 # Database connection function
 def get_db_connection():
     try:
-        # Use session-stored config or defaults
-        db_config = session.get('db_config', {
-            'server': '.',
-            'database': 'RMSCashierSrv',
-            'username': 'sa',
-            'password': 'P@ssw0rd'
-        })
+        # Try different ODBC drivers
+        drivers = [
+            'ODBC Driver 18 for SQL Server',
+            'ODBC Driver 17 for SQL Server',
+            'ODBC Driver 13 for SQL Server',
+            'SQL Server Native Client 11.0',
+            'SQL Server Native Client 10.0',
+            'SQL Server'
+        ]
 
-        conn_str = (
-            f'DRIVER={{ODBC Driver 18 for SQL Server}};'
-            f'SERVER={db_config["server"]};'
-            f'DATABASE={db_config["database"]};'
-            f'UID={db_config["username"]};'
-            f'PWD={db_config["password"]}'
-        )
+        conn = None
+        for driver in drivers:
+            try:
+                conn_str = (
+                    f'DRIVER={{{driver}}};'
+                    f'SERVER=.;'
+                    f'DATABASE=RMSCashierSrv;'
+                    f'UID=sa;'
+                    f'PWD=P@ssw0rd'
+                )
+                conn = pyodbc.connect(conn_str)
+                print(f"Connected successfully using {driver}")
+                break
+            except pyodbc.Error as e:
+                print(f"Failed with {driver}: {str(e)}")
+                continue
 
-        conn = pyodbc.connect(conn_str)
+        if conn is None:
+            raise Exception("Could not connect with any available driver")
+
         return conn
 
     except Exception as e:
@@ -515,6 +528,19 @@ def test_minimal_request():
         return jsonify({'error': str(e), 'url': url}), 500
 
 
+@app.route('/check-drivers')
+def check_drivers():
+    """Check available ODBC drivers"""
+    try:
+        drivers = pyodbc.drivers()
+        return jsonify({
+            'available_drivers': drivers,
+            'message': f'Found {len(drivers)} drivers'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/get-item-details', methods=['GET'])
 def get_item_details():
     try:
@@ -602,26 +628,31 @@ def get_item_details():
         ORDER BY I.Id DESC;
         """
 
-        cursor.execute(query, material_number)
-        row = cursor.fetchone()
-        if not row:
-            return jsonify({'error': 'No item found with this material number'}), 404
+        try:
+            cursor.execute(query, material_number)
+            row = cursor.fetchone()
 
-        item_details = {
-            'item_code': row[1],
-            'item_Barcode': row[2],
-            'item_AR_Name': row[3],
-            'item_EN_Name': row[4],  # barcode fallback, else English name
-            'unit_price': float(row[9]),
-            'vat_percentage': float(row[18]) if row[18] is not None else 0.0,  # TT.Rate
-            'net_price': float(row[10]),
-        }
+            if not row:
+                return jsonify({'error': 'No item found with this material number'}), 404
 
-        conn.close()
-        return jsonify(item_details)
+            item_details = {
+                'item_code': row[0] if row[0] else f"000000000000{material_number}",
+                'item_Barcode': row[1] if row[1] else f"BC{material_number}",
+                'item_EN_Name': row[2] if row[2] else f"Item {material_number}",
+                'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",
+                'unit_price': float(row[4]) if row[4] else 0.0,
+                'vat_percentage': float(row[5]) if row[5] else 0.0,
+                'net_price': (float(row[4]) if row[4] else 0.0) * (1 + (float(row[5]) if row[5] else 0.0) / 100)
+            }
+
+            conn.close()
+            return jsonify(item_details)
+
+        except pyodbc.Error as e:
+            return jsonify({'error': f'Database query error: {str(e)}'}), 500
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
 
 
 @app.route('/update-product/<int:index>', methods=['GET', 'POST'])

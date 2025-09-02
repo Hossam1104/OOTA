@@ -308,15 +308,15 @@
             transform: scale(1.1);
         }
 
-        .theme-blue { background: linear-gradient(45deg, #4e73df, #224abe); }
-        .theme-green { background: linear-gradient(45deg, #1cc88a, #13855c); }
-        .theme-purple { background: linear-gradient(45deg, #6f42c1, #4e2d8c); }
-        .theme-orange { background: linear-gradient(45deg, #f6c23e, #dda20a); }
-        .theme-red { background: linear-gradient(45deg, #e74a3b, #be2617); }
-        .theme-pink { background: linear-gradient(45deg, #e83e8c, #b52e6d); }
-        .theme-teal { background: linear-gradient(45deg, #20c9a6, #189e80); }
-        .theme-cyan { background: linear-gradient(45deg, #36b9cc, #298fa0); }
-        .theme-indigo { background: linear-gradient(45deg, #6610f2, #4e0cb9); }
+        .theme-blue { background-color: #4e73df; color: white; }
+        .theme-green { background-color: #1cc88a; color: white; }
+        .theme-purple { background-color: #6f42c1; color: white; }
+        .theme-orange { background-color: #f6c23e; color: black; }
+        .theme-red { background-color: #e74a3b; color: white; }
+        .theme-pink { background-color: #e83e8c; color: white; }
+        .theme-teal { background-color: #20c9a6; color: white; }
+        .theme-cyan { background-color: #36b9cc; color: white; }
+        .theme-indigo { background-color: #6610f2; color: white; }
 
         .badge {
             padding: 6px 10px;
@@ -533,6 +533,11 @@
     <div class="theme-btn theme-teal" data-theme="teal"></div>
     <div class="theme-btn theme-cyan" data-theme="cyan"></div>
     <div class="theme-btn theme-indigo" data-theme="indigo"></div>
+    <div class="theme-btn theme-red" data-theme="red"></div>
+    <div class="theme-btn theme-pink" data-theme="pink"></div>
+    <div class="theme-btn theme-teal" data-theme="teal"></div>
+    <div class="theme-btn theme-cyan" data-theme="cyan"></div>
+    <div class="theme-btn theme-indigo" data-theme="indigo"></div>
 </div>
 
 <!-- Bootstrap & jQuery -->
@@ -542,36 +547,39 @@
 <!-- Custom JavaScript -->
 <script>
     // Theme switching
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const theme = btn.getAttribute('data-theme');
-            document.documentElement.style.setProperty('--primary-color', getThemeColor(theme));
-            document.documentElement.style.setProperty('--accent-color', getThemeColor(theme));
-            document.documentElement.style.setProperty('--sidebar-bg', getThemeColor(theme));
-            localStorage.setItem('selectedTheme', theme);
-        });
+document.querySelectorAll('.theme-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        e.preventDefault();
+        const theme = option.getAttribute('data-theme');
+        applyTheme(theme);
+        localStorage.setItem('selectedTheme', theme);
     });
+});
 
-    function getThemeColor(theme) {
-        switch(theme) {
-            case 'blue': return '#4e73df';
-            case 'green': return '#1cc88a';
-            case 'purple': return '#6f42c1';
-            case 'orange': return '#f6c23e';
-            case 'red': return '#e74a3b';
-            case 'pink': return '#e83e8c';
-            case 'teal': return '#20c9a6';
-            case 'cyan': return '#36b9cc';
-            case 'indigo': return '#6610f2';
-            default: return '#4e73df';
-        }
-    }
+function applyTheme(theme) {
+    const colors = {
+        'blue': { primary: '#4e73df', secondary: '#6f42c1' },
+        'green': { primary: '#1cc88a', secondary: '#13855c' },
+        'purple': { primary: '#6f42c1', secondary: '#4e2d8c' },
+        'orange': { primary: '#f6c23e', secondary: '#dda20a' },
+        'red': { primary: '#e74a3b', secondary: '#be2617' },
+        'pink': { primary: '#e83e8c', secondary: '#b52e6d' },
+        'teal': { primary: '#20c9a6', secondary: '#189e80' },
+        'cyan': { primary: '#36b9cc', secondary: '#298fa0' },
+        'indigo': { primary: '#6610f2', secondary: '#4e0cb9' }
+    };
 
-    // Load saved theme
-    const savedTheme = localStorage.getItem('selectedTheme') || 'blue';
-    document.documentElement.style.setProperty('--primary-color', getThemeColor(savedTheme));
-    document.documentElement.style.setProperty('--accent-color', getThemeColor(savedTheme));
-    document.documentElement.style.setProperty('--sidebar-bg', getThemeColor(savedTheme));
+    const themeColors = colors[theme] || colors['blue'];
+
+    document.documentElement.style.setProperty('--primary-color', themeColors.primary);
+    document.documentElement.style.setProperty('--secondary-color', themeColors.secondary);
+    document.documentElement.style.setProperty('--accent-color', themeColors.primary);
+    document.documentElement.style.setProperty('--sidebar-bg', themeColors.primary);
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('selectedTheme') || 'blue';
+applyTheme(savedTheme);
 
     // Auto-calculate totals on page load
     $(document).ready(function() {
