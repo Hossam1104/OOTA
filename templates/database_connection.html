@@ -1,0 +1,94 @@
+<!-- templates/database_connection.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Database Connection</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Database Query</h5>
+            </div>
+            <div class="card-body">
+                <form id="dbQueryForm">
+                    <div class="mb-3">
+                        <label class="form-label">Material Number (6 digits)</label>
+                        <input type="text" class="form-control" id="materialNumber" placeholder="Enter 6-digit material number" maxlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Query Database</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Query Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="queryResults" class="text-muted">
+                    No results yet. Enter a material number and click "Query Database".
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#dbQueryForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const materialNumber = $('#materialNumber').val();
+
+            if (!materialNumber || materialNumber.length !== 6) {
+                alert('Please enter a 6-digit material number');
+                return;
+            }
+
+
+            $.ajax({
+                type: 'GET',
+                url: '{{ url_for("get_item_details") }}',
+                data: {
+                    material_number: materialNumber
+                },
+                success: function(response) {
+                    if (response.error) {
+                        $('#queryResults').html(`<div class="alert alert-danger">${response.error}</div>`);
+                    } else {
+                        $('#queryResults').html(`
+                            <div class="alert alert-success">
+                                <strong>Item Found:</strong> ${"000000000000" + response.item_code}
+                            </div>
+                            <table class="table table-striped">
+                                <tr><th>Item Code</th><td>${response.item_Barcode}</td></tr>
+                                 <tr><th>Item EN Name</th><td>${response.item_EN_Name}</td></tr>
+                                 <tr><th>Item AR Name</th><td>${response.item_AR_Name}</td></tr>
+                                <tr><th>Unit Price</th><td>${response.unit_price}</td></tr>
+                                <tr><th>VAT %</th><td>${response.vat_percentage}</td></tr>
+                                <tr><th>Net Price</th><td>${response.net_price}</td></tr>
+                            </table>
+                            <button class="btn btn-success" onclick="addToProducts(${materialNumber})">
+                                <i class="bi bi-cart-plus"></i> Add to Products
+                            </button>
+                        `);
+                    }
+                },
+                error: function() {
+                    $('#queryResults').html('<div class="alert alert-danger">Item not found or Error querying database</div>');
+                }
+            });
+        });
+    });
+
+    function addToProducts(materialNumber) {
+        // This function would be implemented to add the item to the products list
+        alert('Add to products functionality would be implemented here for material: ' + materialNumber);
+    }
+</script>
+{% endblock %}

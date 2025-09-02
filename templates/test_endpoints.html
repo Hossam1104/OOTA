@@ -1,0 +1,114 @@
+{% extends "base_simple.html" %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="border-bottom pb-2">API Endpoint Status</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-plug me-2"></i>Connection Test Results</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>Endpoint Name</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for name, result in results.items() %}
+                    <tr>
+                        <td class="fw-bold">{{ name }}</td>
+                        <td>
+                            <small class="text-muted">{{ result.url }}</small>
+                        </td>
+                        <td>
+                            {% if result.status == 'Online' %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Online</span>
+                            {% elif result.status == 'Offline' %}
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Offline</span>
+                            {% else %}
+                            <span class="badge bg-warning"><i class="bi bi-exclamation-triangle me-1"></i>Error</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if result.status == 'Online' %}
+                            <span class="text-success">Connection successful</span>
+                            {% elif result.status == 'Offline' %}
+                            <span class="text-danger">Error code: {{ result.error_code }}</span>
+                            {% else %}
+                            <span class="text-warning">{{ result.error }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Connection Statistics</h6>
+                </div>
+                <div class="card-body">
+                    {% set online_count = results.values()|selectattr('status', 'equalto', 'Online')|list|length %}
+                    {% set total_count = results|length %}
+                    <div class="text-center">
+                        <h3 class="text-{{ 'success' if online_count > 0 else 'danger' }}">{{ online_count }}/{{ total_count }}</h3>
+                        <p class="text-muted">Endpoints Online</p>
+                    </div>
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: {{ (online_count/total_count)*100 }}%"
+                             aria-valuenow="{{ online_count }}" aria-valuemin="0" aria-valuemax="{{ total_count }}">
+                            {{ ((online_count/total_count)*100)|round|int }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('api_configuration') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-gear me-2"></i>API Configuration
+                        </a>
+                        <a href="{{ url_for('test_minimal_request') }}" class="btn btn-outline-info" target="_blank">
+                            <i class="bi bi-play-circle me-2"></i>Test Minimal Request
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh every 30 seconds
+    setTimeout(() => {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

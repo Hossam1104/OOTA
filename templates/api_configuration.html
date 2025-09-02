@@ -1,0 +1,91 @@
+<!-- templates/api_configuration.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">API Configuration</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- API Configuration Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">API Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('send_request') }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">API Endpoint</label>
+                                <select class="form-select" name="api_endpoint">
+                                    <option value="">Select Endpoint</option>
+                                    {% for name, url in api_urls.items() %}
+                                    <option value="{{ name }}" {% if name==selected_endpoint %}selected{% endif %}>{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Custom URL</label>
+                                <input type="text" class="form-control" name="custom_url" placeholder="https://example.com/api/endpoint">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="{{ url_for('test_endpoints') }}" class="btn btn-info">
+                            <i class="bi bi-plug"></i> Test All Endpoints
+                        </a>
+                        <a href="{{ url_for('test_minimal_request') }}" class="btn btn-warning" target="_blank">
+                            <i class="bi bi-play-circle"></i> Test Minimal Request
+                        </a>
+                    </div>
+                    <div class="mt-3">
+
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Request</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- API Response Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">API Response</h5>
+            </div>
+            <div class="card-body">
+                {% if response %}
+                <div class="mb-3">
+                    <strong>Status Code:</strong> {{ response.status_code }}
+                </div>
+
+                <div class="mb-3">
+                    <strong>URL Sent:</strong> {{ response.url_sent }}
+                </div>
+
+                <div class="mt-3">
+                    <a href="{{ url_for('export_json') }}" class="btn btn-info" download="order_data.json">
+                        <i class="bi bi-download"></i> Download JSON Instead
+                    </a>
+                </div>
+
+                {% if response.response_json %}
+                <pre>{{ response.response_json|tojson(indent=2) }}</pre>
+                {% else %}
+                <pre>{{ response.response_text }}</pre>
+                {% endif %}
+
+                {% if response.status_code == 200 %}
+                <div class="alert alert-success mt-3">
+                    <i class="bi bi-check-circle"></i> JSON file saved successfully in the "JSON files" folder
+                </div>
+                {% endif %}
+                {% else %}
+                <p class="text-muted">No response yet. Send a request to see the response here.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

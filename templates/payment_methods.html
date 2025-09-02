@@ -1,0 +1,366 @@
+<!-- templates/payment_methods.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Payment Methods</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- Payment Methods Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment Methods</h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                    <i class="bi bi-plus"></i> Add Payment
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>Payment Method</th>
+                            <th>Payment Status</th>
+                            <th>Amount</th>
+                            <th>Transaction ID</th>
+                            <th>Payment Option</th>
+                            <th>Commission</th>
+                            <th>Customer Info</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_method }}</td>
+                            <td>{{ payment.payment_status }}</td>
+                            <td>{{ payment.payment_amount }}</td>
+                            <td>{{ payment.transaction_id }}</td>
+                            <td>{{ payment.payment_option }}</td>
+                            <td>{{ payment.option_commission }}</td>
+                            <td>
+                                {% if payment.credit_customer_info %}
+                                {{ payment.credit_customer_info.customer_name }} ({{ payment.credit_customer_info.customer_number }})
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary edit-payment" data-index="{{ loop.index0 }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <a href="{{ url_for('remove_payment', index=loop.index0) }}" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_payment') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" name="payment_method" id="paymentMethod" required>
+                                    <option value="">Select Method</option>
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method }}">{{ method }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-select" name="payment_status" required>
+                                    <option value="">Select Status</option>
+                                    {% for status in payment_statuses %}
+                                    <option value="{{ status }}">{{ status|replace('_', ' ')|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <input type="number" step="0.01" class="form-control" name="payment_amount" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Transaction ID</label>
+                                <input type="text" class="form-control" name="transaction_id">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Option</label>
+                                <select class="form-select" name="payment_option" id="paymentOption">
+                                    <option value="">Select Option</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Commission</label>
+                                <input type="number" step="0.01" class="form-control" name="option_commission" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Card Name</label>
+                                <input type="text" class="form-control" name="card_name">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Bank Code</label>
+                                <input type="text" class="form-control" name="bank_code">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Credit Customer Info (only shown for PostToCredit) -->
+                    <div class="row" id="creditCustomerInfo" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Customer Number</label>
+                                <input type="text" class="form-control" name="customer_number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" name="customer_name">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Payment Modal -->
+<div class="modal fade" id="editPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Payment Method</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="editPaymentForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" name="payment_method" id="editPaymentMethod" required>
+                                    <option value="">Select Method</option>
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method }}">{{ method }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-select" name="payment_status" id="editPaymentStatus" required>
+                                    <option value="">Select Status</option>
+                                    {% for status in payment_statuses %}
+                                    <option value="{{ status }}">{{ status|replace('_', ' ')|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Amount</label>
+                                <input type="number" step="0.01" class="form-control" name="payment_amount" id="editPaymentAmount" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Transaction ID</label>
+                                <input type="text" class="form-control" name="transaction_id" id="editTransactionId">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Option</label>
+                                <select class="form-select" name="payment_option" id="editPaymentOption">
+                                    <option value="">Select Option</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Commission</label>
+                                <input type="number" step="0.01" class="form-control" name="option_commission" id="editOptionCommission" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Card Name</label>
+                                <input type="text" class="form-control" name="card_name" id="editCardName">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Bank Code</label>
+                                <input type="text" class="form-control" name="bank_code" id="editBankCode">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Credit Customer Info (only shown for PostToCredit) -->
+                    <div class="row" id="editCreditCustomerInfo" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Customer Number</label>
+                                <input type="text" class="form-control" name="customer_number" id="editCustomerNumber">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Customer Name</label>
+                                <input type="text" class="form-control" name="customer_name" id="editCustomerName">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Update payment options based on selected payment method
+        $('#paymentMethod').change(function() {
+            updatePaymentOptions($(this).val(), $('#paymentOption'));
+        });
+
+        $('#editPaymentMethod').change(function() {
+            updatePaymentOptions($(this).val(), $('#editPaymentOption'));
+
+            // Show/hide credit customer info based on payment method
+            if ($(this).val() === 'PostToCredit') {
+                $('#editCreditCustomerInfo').show();
+            } else {
+                $('#editCreditCustomerInfo').hide();
+            }
+        });
+
+        // Edit payment functionality
+        $('.edit-payment').click(function() {
+            const index = $(this).data('index');
+
+            $.get('{{ url_for("update_payment", index=0) }}'.replace('0', index), function(data) {
+                if (!data.error) {
+                    $('#editPaymentMethod').val(data.payment_method);
+                    $('#editPaymentStatus').val(data.payment_status);
+                    $('#editPaymentAmount').val(data.payment_amount);
+                    $('#editTransactionId').val(data.transaction_id);
+                    $('#editPaymentOption').val(data.payment_option);
+                    $('#editOptionCommission').val(data.option_commission);
+                    $('#editCardName').val(data.card_name);
+                    $('#editBankCode').val(data.bank_code);
+
+                    // Set credit customer info if available
+                    if (data.credit_customer_info) {
+                        $('#editCustomerNumber').val(data.credit_customer_info.customer_number);
+                        $('#editCustomerName').val(data.credit_customer_info.customer_name);
+                        $('#editCreditCustomerInfo').show();
+                    } else {
+                        $('#editCreditCustomerInfo').hide();
+                    }
+
+                    // Update payment options
+                    updatePaymentOptions(data.payment_method, $('#editPaymentOption'));
+
+                    // Update form action
+                    $('#editPaymentForm').attr('action', '{{ url_for("update_payment", index=0) }}'.replace('0', index));
+
+                    // Show modal
+                    $('#editPaymentModal').modal('show');
+                } else {
+                    alert('Error loading payment: ' + data.error);
+                }
+            }).fail(function() {
+                alert('Error loading payment details');
+            });
+        });
+
+        function updatePaymentOptions(method, optionSelect) {
+            const options = {{ payment_options|tojson }};
+
+            optionSelect.empty();
+            optionSelect.append('<option value="">Select Option</option>');
+
+            if (method && options[method]) {
+                options[method].forEach(option => {
+                    optionSelect.append(`<option value="${option}">${option}</option>`);
+                });
+            }
+
+            // Show/hide credit customer info based on payment method
+            if (method === 'PostToCredit') {
+                $('#creditCustomerInfo').show();
+            } else {
+                $('#creditCustomerInfo').hide();
+            }
+        }
+
+        // Trigger change event on page load if there's a selected value
+        $('#paymentMethod').trigger('change');
+    });
+</script>
+{% endblock %}
