@@ -20,10 +20,10 @@ def get_db_connection():
     try:
         conn = pyodbc.connect(
             'DRIVER={ODBC Driver 17 for SQL Server};'
-            'SERVER=.;'
-            'DATABASE=RMSCashierSrv;'
-            'UID=sa;'
-            'PWD=P@ssw0rd'
+            'SERVER=.;'  # Database server
+            'DATABASE=RMSCashierSrv;'  # Database name
+            'UID=sa;'  # Username
+            'PWD=P@ssw0rd'  # Password
         )
         return conn
     except Exception as e:
