@@ -568,12 +568,12 @@ def get_item_details():
             IP.Price AS UnitPrice,
             TT.Rate AS VatRate,
             CAST(ROUND(((IP.Price * TT.Rate)/100) + IP.Price, 2) AS DECIMAL(10,2)) AS NetPrice
-        FROM dbo.Items AS I
-        LEFT JOIN dbo.TaxTypes AS TT ON I.SapTaxCode = TT.Code
-        INNER JOIN dbo.ItemUnitOfMeasures AS IUM ON I.Id = IUM.ItemId
-        INNER JOIN dbo.ItemUnitOfMeasureBarCodes AS IUOMB ON IUM.Id = IUOMB.ItemUnitOfMeasureId
-        LEFT JOIN dbo.ItemPrices AS IP ON IUM.Id = IP.ItemUnitOfMeasureId
-        WHERE RIGHT(I.MaterialNumber, 6) = ?
+            FROM dbo.Items AS I
+            LEFT JOIN dbo.TaxTypes AS TT ON I.SapTaxCode = TT.Code
+            INNER JOIN dbo.ItemUnitOfMeasures AS IUM ON I.Id = IUM.ItemId
+            INNER JOIN dbo.ItemUnitOfMeasureBarCodes AS IUOMB ON IUM.Id = IUOMB.ItemUnitOfMeasureId
+            LEFT JOIN dbo.ItemPrices AS IP ON IUM.Id = IP.ItemUnitOfMeasureId
+            WHERE RIGHT(I.MaterialNumber, 6) = ?
             AND IP.IsActive = 1
             AND IP.Price IS NOT NULL
             AND IP.ToDate > GETDATE()

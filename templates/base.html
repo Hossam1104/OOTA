@@ -8,48 +8,37 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #4e73df;
-            --secondary-color: #6f42c1;
-            --success-color: #1cc88a;
-            --info-color: #36b9cc;
-            --warning-color: #f6c23e;
-            --danger-color: #e74a3b;
-            --light-color: #f8f9fc;
-            --dark-color: #5a5c69;
-            --sidebar-bg: var(--primary-color);
-            --sidebar-color: #ffffff;
-            --accent-color: var(--primary-color);
-            --card-bg: #ffffff;
-            --bg-color: #f8f9fc;
-            --hover-color: #2e59d9;
-            --border-color: #e3e6f0;
-            --sidebar-width: 280px;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --sidebar-width: 250px;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--dark-color);
+            color: #333;
             overflow-x: hidden;
         }
 
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
         .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
             width: var(--sidebar-width);
-            height: 100vh;
-            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--hover-color) 100%);
-            color: var(--sidebar-color);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0;
             transition: all 0.3s;
-            z-index: 1000;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
         }
 
         .sidebar-header {
@@ -73,24 +62,18 @@
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.85);
             padding: 12px 20px;
-            margin: 5px 15px;
-            border-radius: 8px;
+            border-radius: 0;
             transition: all 0.3s;
             font-weight: 500;
             display: flex;
             align-items: center;
+            border-left: 4px solid transparent;
         }
 
-        .sidebar .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.15);
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
             color: #fff;
-            transform: translateX(5px);
-        }
-
-        .sidebar .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            font-weight: 600;
+            border-left: 4px solid var(--secondary-color);
         }
 
         .sidebar .nav-link i {
@@ -106,39 +89,32 @@
             text-align: center;
             font-size: 0.85rem;
             opacity: 0.7;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
         }
 
         .main-content {
-            margin-left: var(--sidebar-width);
+            flex: 1;
             padding: 20px;
-            min-height: 100vh;
             transition: all 0.3s;
         }
 
         .card {
             border: none;
-            border-radius: 12px;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-            margin-bottom: 24px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            background-color: #fff;
         }
 
         .card-header {
-            background: linear-gradient(90deg, var(--accent-color) 0%, var(--hover-color) 100%);
+            background-color: var(--primary-color);
             color: white;
             border-bottom: none;
             font-weight: 600;
-            border-radius: 12px 12px 0 0 !important;
+            border-radius: 8px 8px 0 0 !important;
             padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .card-header h5 {
@@ -151,108 +127,62 @@
         }
 
         .btn {
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 10px 20px;
             font-weight: 500;
             transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn i {
-            margin-right: 8px;
         }
 
         .btn-primary {
-            background: linear-gradient(90deg, var(--accent-color) 0%, var(--hover-color) 100%);
+            background-color: var(--secondary-color);
             border: none;
         }
 
         .btn-primary:hover {
+            background-color: var(--accent-color);
             transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(78, 115, 223, 0.3);
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.875rem;
         }
 
         .stat-card {
             text-align: center;
-            padding: 20px;
-            border-left: 4px solid var(--accent-color);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: var(--accent-color);
+            color: var(--secondary-color);
             margin-bottom: 5px;
         }
 
         .stat-label {
             color: var(--dark-color);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .section-title {
-            color: var(--dark-color);
-            font-weight: 700;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--accent-color);
-            position: relative;
-        }
-
-        .section-title:after {
-            content: '';
-            position: absolute;
-            bottom: -3px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--secondary-color);
         }
 
         .table {
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .table th {
-            background: linear-gradient(90deg, var(--accent-color) 0%, var(--hover-color) 100%);
-            color: white;
+            background-color: var(--light-color);
+            color: var(--dark-color);
             font-weight: 600;
             border: none;
             padding: 12px 15px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
         }
 
         .table td {
             padding: 12px 15px;
             vertical-align: middle;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(52, 152, 219, 0.05);
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(52, 152, 219, 0.1);
+            border-top: 1px solid #eee;
         }
 
         .alert {
@@ -260,19 +190,18 @@
             border-radius: 8px;
             padding: 15px 20px;
             margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .form-control, .form-select {
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 10px 15px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #ddd;
             transition: all 0.3s;
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
         }
 
         .form-label {
@@ -282,281 +211,549 @@
             font-size: 0.9rem;
         }
 
+        .nav-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        .nav-tabs .nav-link.active {
+            border-bottom: 3px solid var(--secondary-color);
+            color: var(--secondary-color);
+            background: transparent;
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
         .theme-selector {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
-        .theme-btn {
-            width: 30px;
-            height: 30px;
+        .action-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            margin: 5px;
-            border: 2px solid white;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-        }
-
-        .theme-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .theme-blue { background-color: #4e73df; color: white; }
-        .theme-green { background-color: #1cc88a; color: white; }
-        .theme-purple { background-color: #6f42c1; color: white; }
-        .theme-orange { background-color: #f6c23e; color: black; }
-        .theme-red { background-color: #e74a3b; color: white; }
-        .theme-pink { background-color: #e83e8c; color: white; }
-        .theme-teal { background-color: #20c9a6; color: white; }
-        .theme-cyan { background-color: #36b9cc; color: white; }
-        .theme-indigo { background-color: #6610f2; color: white; }
-
-        .badge {
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.75rem;
-        }
-
-        .api-endpoint {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 5px;
-            font-size: 0.8rem;
-            word-break: break-all;
-        }
-
-        .api-endpoint-title {
-            font-weight: 600;
-            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
         }
 
         @media (max-width: 992px) {
+            .app-container {
+                flex-direction: column;
+            }
+
             .sidebar {
                 width: 100%;
                 height: auto;
                 position: relative;
-                margin-bottom: 20px;
             }
+
             .main-content {
                 margin-left: 0;
             }
+
+            .sidebar-footer {
+                position: relative;
+            }
         }
 
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+        .compact-form .form-group {
+            margin-bottom: 1rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .grid-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-        }
-
-        .grid-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .quick-stat {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-        }
-
-        .quick-stat:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .quick-stat-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 5px;
-        }
-
-        .quick-stat-label {
-            color: var(--dark-color);
-            font-weight: 600;
-            font-size: 0.85rem;
-            text-transform: uppercase;
+        .summary-card {
+            position: sticky;
+            top: 1rem;
         }
     </style>
 </head>
 <body>
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h4>Online Order Tool</h4>
-        <p>Order Management System</p>
-    </div>
-    <!-- Navigation -->
-    <ul class="nav flex-column mt-4">
-        <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'order_details' %}active{% endif %}" href="{{ url_for('order_details') }}">
-                <i class="bi bi-cart"></i> Order Details
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'payment_methods' %}active{% endif %}" href="{{ url_for('payment_methods') }}">
-                <i class="bi bi-credit-card"></i> Payment Methods
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'api_configuration' %}active{% endif %}" href="{{ url_for('api_configuration') }}">
-                <i class="bi bi-gear"></i> API Configuration
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'database_connection' %}active{% endif %}" href="{{ url_for('database_connection') }}">
-                <i class="bi bi-database"></i> Database Connection
-            </a>
-        </li>
-        <!-- Add this new item -->
-        <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'test_endpoints' %}active{% endif %}" href="{{ url_for('test_endpoints') }}">
-                <i class="bi bi-plug"></i> Test Endpoints
-            </a>
-        </li>
-    </ul>
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4>Online Order Tool</h4>
+            <p>Order Management System</p>
+        </div>
 
-    <div class="mt-4 px-3">
-        <h6 class="text-white mb-3">Quick Actions</h6>
-        <ul class="nav flex-column">
+        <!-- Navigation -->
+        <ul class="nav flex-column mt-4">
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('load_default') }}">
-                    <i class="bi bi-arrow-clockwise"></i> Load Default
+                <a class="nav-link active" href="#" data-section="dashboard">
+                    <i class="bi bi-cart"></i> Order Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('clear_all') }}">
-                    <i class="bi bi-trash"></i> Clear All
+                <a class="nav-link" href="#" data-section="api-config">
+                    <i class="bi bi-gear"></i> API Configuration
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('export_json') }}" target="_blank">
-                    <i class="bi bi-download"></i> Export JSON
+                <a class="nav-link" href="#" data-section="database">
+                    <i class="bi bi-database"></i> Database Connection
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="endpoints">
+                    <i class="bi bi-plug"></i> Test Endpoints
                 </a>
             </li>
         </ul>
-    </div>
 
-    {% if api_urls is defined %}
-    <div class="mt-4 px-3">
-        <h6 class="text-white mb-3">API Endpoints</h6>
-        {% for name, url in api_urls.items() %}
-        <div class="mb-3">
-            <div class="api-endpoint-title text-white">{{ name }}</div>
-            <div class="api-endpoint">{{ url }}</div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    {% if products is defined and payments is defined %}
-    <div class="sidebar-footer">
-        <div class="quick-stats">
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ products|length }}</div>
-                <div class="quick-stat-label">Products</div>
+        <div class="mt-4 px-3">
+            <h6 class="text-white mb-3">Quick Stats</h6>
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">PRODUCTS</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ payments|length }}</div>
-                <div class="quick-stat-label">Payments</div>
+            <div class="stat-card">
+                <div class="stat-number">1</div>
+                <div class="stat-label">PAYMENTS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">83.75</div>
+                <div class="stat-label">TOTAL</div>
             </div>
         </div>
-        <p>Online Order Tool v1.0</p>
-    </div>
-    {% endif %}
-</div>
 
-<!-- Main Content -->
-<div class="main-content">
-    <!-- Theme Selector at top right -->
-    <div class="theme-selector" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
-        <div class="btn-group">
-            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="bi bi-palette"></i> Themes
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item theme-option" href="#" data-theme="blue">Blue Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="green">Green Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="purple">Purple Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="orange">Orange Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="red">Red Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="pink">Pink Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="teal">Teal Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="cyan">Cyan Theme</a></li>
-                <li><a class="dropdown-item theme-option" href="#" data-theme="indigo">Indigo Theme</a></li>
-            </ul>
+        <div class="mt-4 px-3">
+            <h6 class="text-white mb-3">Quick Actions</h6>
+            <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-outline-light" id="load-default-btn">
+                    <i class="bi bi-arrow-clockwise"></i> Load Default
+                </button>
+                <button class="btn btn-sm btn-outline-light" id="clear-all-btn">
+                    <i class="bi bi-trash"></i> Clear All
+                </button>
+                <button class="btn btn-sm btn-outline-light" id="export-json-btn">
+                    <i class="bi bi-download"></i> Export JSON
+                </button>
+                <button class="btn btn-sm btn-outline-light" id="send-request-btn">
+                    <i class="bi bi-send"></i> Send Request
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <p>Online Order Tool v1.0</p>
         </div>
     </div>
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show fade-in" role="alert">
-        <i class="bi bi-{% if category == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
 
-    <!-- SINGLE content block - this is the key fix -->
-    {% block content %}{% endblock %}
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Alert Message -->
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            Order details updated successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="content-section" id="dashboard-section">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Order Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="client-tab" data-bs-toggle="tab" data-bs-target="#client" type="button"
+                                            role="tab">Client Info
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button"
+                                            role="tab">Products
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button"
+                                            role="tab">Payments
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button"
+                                            role="tab">Delivery
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="orderTabContent">
+                                <!-- Client Info Tab -->
+                                <div class="tab-pane fade show active" id="client" role="tabpanel">
+                                    <form class="mt-3" id="client-form">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">First Name</label>
+                                                    <input type="text" class="form-control" name="client_first_name" value="Hossam">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Last Name</label>
+                                                    <input type="text" class="form-control" name="client_last_name" value="Mohamed">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Phone</label>
+                                                    <input type="text" class="form-control" name="client_phone" value="556020500">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Email</label>
+                                                    <input type="email" class="form-control" name="client_email" value="Hossam.Mohamed@dhamesa.com">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label">Address</label>
+                                                    <textarea class="form-control" name="order_address" rows="2">Riyadh City</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Branch Code</label>
+                                                    <input type="text" class="form-control" name="branch_code" value="2000">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Order Code</label>
+                                                    <input type="text" class="form-control" name="order_code" value="Order_11">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class="form-label">Status</label>
+                                                    <select class="form-select" name="order_status">
+                                                        <option value="new" selected>New</option>
+                                                        <option value="confirmed">Confirmed</option>
+                                                        <option value="preparing">Preparing</option>
+                                                        <option value="ready">Ready</option>
+                                                        <option value="delivered">Delivered</option>
+                                                        <option value="cancelled">Cancelled</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-end mt-3">
+                                            <button type="button" class="btn btn-primary" id="update-client-btn">
+                                                <i class="bi bi-check-lg"></i> Update Client Info
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Products Tab -->
+                                <div class="tab-pane fade" id="products" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6>Order Products</h6>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                            <i class="bi bi-plus"></i> Add Product
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Name</th>
+                                                <th>Qty</th>
+                                                <th>Price</th>
+                                                <th>Total</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>PRD001</td>
+                                                <td>Product One</td>
+                                                <td>2</td>
+                                                <td>25.00</td>
+                                                <td>50.00</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>PRD002</td>
+                                                <td>Product Two</td>
+                                                <td>1</td>
+                                                <td>33.75</td>
+                                                <td>33.75</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Payments Tab -->
+                                <div class="tab-pane fade" id="payments" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6>Payment Methods</h6>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                                            <i class="bi bi-plus"></i> Add Payment
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                            <tr>
+                                                <th>Method</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Transaction ID</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr>
+                                                <td>Credit Card</td>
+                                                <td>83.75</td>
+                                                <td>
+                                                    <span class="badge bg-success">done_payment</span>
+                                                </td>
+                                                <td>TXN123456</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Delivery Tab -->
+                                <div class="tab-pane fade" id="delivery" role="tabpanel">
+                                    <form class="mt-3" id="delivery-form">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Delivery Date</label>
+                                                    <input type="date" class="form-control" name="delivery_date" value="2023-11-15">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">From Time</label>
+                                                    <input type="time" class="form-control" name="delivery_from_time" value="14:00">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">To Time</label>
+                                                    <input type="time" class="form-control" name="delivery_to_time" value="16:00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Delivery Cost</label>
+                                                    <input type="number" step="0.01" class="form-control" name="order_delivery_cost" value="0.00">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="form-label">Fulfillment Plant</label>
+                                                    <input type="text" class="form-control" name="fullfilment_plant" value="Main Plant">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="form-label">Additional Address Info</label>
+                                                    <input type="text" class="form-control" name="shipping_address_2"
+                                                           value="Building 5, Apartment 12">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-end mt-3">
+                                            <button type="button" class="btn btn-primary" id="update-delivery-btn">
+                                                <i class="bi bi-check-lg"></i> Update Delivery Info
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Column -->
+                <div class="col-lg-4">
+                    <div class="card summary-card">
+                        <div class="card-header">
+                            <h5>Order Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Products Total:</span>
+                                <strong id="products-total">83.75</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Discount:</span>
+                                <strong id="order-discount">0.00</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Delivery Cost:</span>
+                                <strong id="delivery-cost">0.00</strong>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="fw-bold">Final Total:</span>
+                                <strong class="text-primary fs-5" id="final-total">83.75</strong>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-select" id="payment-status-select">
+                                    <option value="not_payment" selected>Not Payment</option>
+                                    <option value="done_payment">Done Payment</option>
+                                    <option value="partial_payment">Partial Payment</option>
+                                    <option value="failed_payment">Failed Payment</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success" id="calculate-totals-btn">
+                                    <i class="bi bi-calculator"></i> Calculate Totals
+                                </button>
+                                <button class="btn btn-primary" id="update-order-btn">
+                                    <i class="bi bi-check-circle"></i> Update Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>API Configuration</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Select Endpoint</label>
+                                <select class="form-select" id="api-endpoint-select">
+                                    <option selected>Adam Pharmacy - Production</option>
+                                    <option>Adam Pharmacy - Testing</option>
+                                    <option>Whites Pharmacy - Production</option>
+                                    <option>Whites Pharmacy - Testing</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Or Enter Custom URL</label>
+                                <input type="text" class="form-control" id="custom-url" placeholder="https://api.example.com/endpoint">
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" id="test-api-btn">
+                                    <i class="bi bi-plug"></i> Test Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Sections (Initially Hidden) -->
+        <div class="content-section d-none" id="api-config-section">
+            <div class="card">
+                <div class="card-header">
+                    <h5>API Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <p>API configuration details will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section d-none" id="database-section">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Database Connection</h5>
+                </div>
+                <div class="card-body">
+                    <p>Database connection details will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section d-none" id="endpoints-section">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Test Endpoints</h5>
+                </div>
+                <div class="card-body">
+                    <p>Endpoint testing details will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Theme Selector -->
-<div class="theme-selector">
-    <div class="theme-btn theme-blue" data-theme="blue"></div>
-    <div class="theme-btn theme-green" data-theme="green"></div>
-    <div class="theme-btn theme-purple" data-theme="purple"></div>
-    <div class="theme-btn theme-orange" data-theme="orange"></div>
-    <div class="theme-btn theme-red" data-theme="red"></div>
-    <div class="theme-btn theme-pink" data-theme="pink"></div>
-    <div class="theme-btn theme-teal" data-theme="teal"></div>
-    <div class="theme-btn theme-cyan" data-theme="cyan"></div>
-    <div class="theme-btn theme-indigo" data-theme="indigo"></div>
-    <div class="theme-btn theme-red" data-theme="red"></div>
-    <div class="theme-btn theme-pink" data-theme="pink"></div>
-    <div class="theme-btn theme-teal" data-theme="teal"></div>
-    <div class="theme-btn theme-cyan" data-theme="cyan"></div>
-    <div class="theme-btn theme-indigo" data-theme="indigo"></div>
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <button class="btn btn-primary action-btn rounded-circle">
+        <i class="bi bi-save"></i>
+    </button>
+    <button class="btn btn-success action-btn rounded-circle">
+        <i class="bi bi-send"></i>
+    </button>
+    <button class="btn btn-info action-btn rounded-circle">
+        <i class="bi bi-download"></i>
+    </button>
 </div>
 
 <!-- Bootstrap & jQuery -->
@@ -565,50 +762,70 @@
 
 <!-- Custom JavaScript -->
 <script>
-    // Theme switching
-document.querySelectorAll('.theme-option').forEach(option => {
-    option.addEventListener('click', (e) => {
-        e.preventDefault();
-        const theme = option.getAttribute('data-theme');
-        applyTheme(theme);
-        localStorage.setItem('selectedTheme', theme);
+    // Handle navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remove active class from all links
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            // Add active class to clicked link
+            this.classList.add('active');
+
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+
+            // Show the selected section
+            const sectionId = this.getAttribute('data-section') + '-section';
+            document.getElementById(sectionId).classList.remove('d-none');
+        });
     });
-});
 
-function applyTheme(theme) {
-    const colors = {
-        'blue': { primary: '#4e73df', secondary: '#6f42c1' },
-        'green': { primary: '#1cc88a', secondary: '#13855c' },
-        'purple': { primary: '#6f42c1', secondary: '#4e2d8c' },
-        'orange': { primary: '#f6c23e', secondary: '#dda20a' },
-        'red': { primary: '#e74a3b', secondary: '#be2617' },
-        'pink': { primary: '#e83e8c', secondary: '#b52e6d' },
-        'teal': { primary: '#20c9a6', secondary: '#189e80' },
-        'cyan': { primary: '#36b9cc', secondary: '#298fa0' },
-        'indigo': { primary: '#6610f2', secondary: '#4e0cb9' }
-    };
+    // Button event handlers
+    document.getElementById('update-client-btn').addEventListener('click', function() {
+        alert('Client information updated successfully!');
+    });
 
-    const themeColors = colors[theme] || colors['blue'];
+    document.getElementById('update-delivery-btn').addEventListener('click', function() {
+        alert('Delivery information updated successfully!');
+    });
 
-    document.documentElement.style.setProperty('--primary-color', themeColors.primary);
-    document.documentElement.style.setProperty('--secondary-color', themeColors.secondary);
-    document.documentElement.style.setProperty('--accent-color', themeColors.primary);
-    document.documentElement.style.setProperty('--sidebar-bg', themeColors.primary);
-}
+    document.getElementById('calculate-totals-btn').addEventListener('click', function() {
+        alert('Totals calculated successfully!');
+    });
 
-// Load saved theme
-const savedTheme = localStorage.getItem('selectedTheme') || 'blue';
-applyTheme(savedTheme);
+    document.getElementById('update-order-btn').addEventListener('click', function() {
+        alert('Order updated successfully!');
+    });
 
-    // Auto-calculate totals on page load
-    $(document).ready(function() {
-        // Check if calculateTotals function exists
-        if (typeof calculateTotals === 'function') {
-            calculateTotals();
+    document.getElementById('test-api-btn').addEventListener('click', function() {
+        const endpoint = document.getElementById('api-endpoint-select').value;
+        alert('Testing connection to: ' + endpoint);
+    });
+
+    // Quick action buttons
+    document.getElementById('load-default-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to load default data?')) {
+            alert('Default data loaded successfully!');
         }
     });
-</script>
 
-{% block scripts %}{% endblock %}
+    document.getElementById('clear-all-btn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all data?')) {
+            alert('All data cleared successfully!');
+        }
+    });
+
+    document.getElementById('export-json-btn').addEventListener('click', function() {
+        alert('JSON export functionality would be implemented here.');
+    });
+
+    document.getElementById('send-request-btn').addEventListener('click', function() {
+        alert('Sending request to API...');
+    });
+</script>
 </body>
 </html>

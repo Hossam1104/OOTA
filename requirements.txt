@@ -1,4 +1,4 @@
-Flask==2.3.3
-pyodbc==4.0.39
-# pymssql==2.2.7
+Flask==3.0.3
+pyodbc==5.2.0
+## pymssql==2.2.7
 requests==2.31.0
