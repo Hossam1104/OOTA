@@ -81,6 +81,8 @@ def index():
     return redirect(url_for('order_details'))
 
 
+# In your app.py, ensure these routes are properly defined:
+
 @app.route('/order-details')
 def order_details():
     return render_template('order_details.html',
@@ -116,6 +118,36 @@ def database_connection():
     return render_template('database_connection.html',
                            api_urls=API_URLS,
                            data=session.get('order_data', DEFAULT_DATA))
+
+
+@app.route('/test-endpoints')
+def test_endpoints():
+    results = {}
+    for name, url in API_URLS.items():
+        try:
+            parsed = urlparse(url)
+            host = parsed.hostname
+            port = parsed.port or (80 if parsed.scheme == 'http' else 443)
+
+            # Test connection
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(3)
+            result = sock.connect_ex((host, port))
+            sock.close()
+
+            results[name] = {
+                'url': url,
+                'status': 'Online' if result == 0 else 'Offline',
+                'error_code': result if result != 0 else None
+            }
+        except Exception as e:
+            results[name] = {
+                'url': url,
+                'status': 'Error',
+                'error': str(e)
+            }
+
+    return render_template('test_endpoints.html', results=results, api_urls=API_URLS)
 
 
 @app.route('/add-product', methods=['POST'])
@@ -931,34 +963,35 @@ def validate_order_data(order_data):
     return errors
 
 
-@app.route('/test-endpoints')
-def test_endpoints():
-    results = {}
-    for name, url in API_URLS.items():
-        try:
-            parsed = urlparse(url)
-            host = parsed.hostname
-            port = parsed.port or (80 if parsed.scheme == 'http' else 443)
-
-            # Test connection
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(3)
-            result = sock.connect_ex((host, port))
-            sock.close()
-
-            results[name] = {
-                'url': url,
-                'status': 'Online' if result == 0 else 'Offline',
-                'error_code': result if result != 0 else None
-            }
-        except Exception as e:
-            results[name] = {
-                'url': url,
-                'status': 'Error',
-                'error': str(e)
-            }
-
-    return render_template('test_endpoints.html', results=results)
+#
+# @app.route('/test-endpoints')
+# def test_endpoints():
+#     results = {}
+#     for name, url in API_URLS.items():
+#         try:
+#             parsed = urlparse(url)
+#             host = parsed.hostname
+#             port = parsed.port or (80 if parsed.scheme == 'http' else 443)
+#
+#             # Test connection
+#             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#             sock.settimeout(3)
+#             result = sock.connect_ex((host, port))
+#             sock.close()
+#
+#             results[name] = {
+#                 'url': url,
+#                 'status': 'Online' if result == 0 else 'Offline',
+#                 'error_code': result if result != 0 else None
+#             }
+#         except Exception as e:
+#             results[name] = {
+#                 'url': url,
+#                 'status': 'Error',
+#                 'error': str(e)
+#             }
+#
+#     return render_template('test_endpoints.html', results=results)
 
 
 @app.context_processor

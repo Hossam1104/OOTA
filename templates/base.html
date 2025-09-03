@@ -18,45 +18,30 @@
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --danger-color: #e74c3c;
-            --sidebar-width: 250px;
         }
 
         body {
             background-color: #f8f9fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #333;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            min-height: 100vh;
         }
 
         .sidebar {
-            width: var(--sidebar-width);
             background-color: var(--primary-color);
             color: white;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
             padding: 0;
-            transition: all 0.3s;
+            z-index: 1000;
         }
 
         .sidebar-header {
             padding: 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        .sidebar-header p {
-            margin: 5px 0 0;
-            font-size: 0.9rem;
-            opacity: 0.8;
         }
 
         .sidebar .nav-link {
@@ -83,21 +68,10 @@
             font-size: 1.1rem;
         }
 
-        .sidebar-footer {
-            padding: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            font-size: 0.85rem;
-            opacity: 0.7;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-        }
-
         .main-content {
-            flex: 1;
+            margin-left: 250px;
             padding: 20px;
-            transition: all 0.3s;
+            min-height: 100vh;
         }
 
         .card {
@@ -105,7 +79,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
-            background-color: #fff;
         }
 
         .card-header {
@@ -115,32 +88,6 @@
             font-weight: 600;
             border-radius: 8px 8px 0 0 !important;
             padding: 15px 20px;
-        }
-
-        .card-header h5 {
-            margin: 0;
-            font-size: 1.1rem;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        .btn {
-            border-radius: 6px;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background-color: var(--secondary-color);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-color);
-            transform: translateY(-2px);
         }
 
         .stat-card {
@@ -166,100 +113,7 @@
             text-transform: uppercase;
         }
 
-        .table {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .table th {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            font-weight: 600;
-            border: none;
-            padding: 12px 15px;
-        }
-
-        .table td {
-            padding: 12px 15px;
-            vertical-align: middle;
-            border-top: 1px solid #eee;
-        }
-
-        .alert {
-            border: none;
-            border-radius: 8px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-        }
-
-        .form-control, .form-select {
-            border-radius: 6px;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--dark-color);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            border-bottom: 3px solid transparent;
-            padding: 12px 20px;
-            color: var(--dark-color);
-            font-weight: 500;
-        }
-
-        .nav-tabs .nav-link.active {
-            border-bottom: 3px solid var(--secondary-color);
-            color: var(--secondary-color);
-            background: transparent;
-        }
-
-        .tab-content {
-            padding: 20px 0;
-        }
-
-        .theme-selector {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .action-buttons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-
         @media (max-width: 992px) {
-            .app-container {
-                flex-direction: column;
-            }
-
             .sidebar {
                 width: 100%;
                 height: auto;
@@ -269,19 +123,6 @@
             .main-content {
                 margin-left: 0;
             }
-
-            .sidebar-footer {
-                position: relative;
-            }
-        }
-
-        .compact-form .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .summary-card {
-            position: sticky;
-            top: 1rem;
         }
     </style>
 </head>
@@ -297,22 +138,27 @@
         <!-- Navigation -->
         <ul class="nav flex-column mt-4">
             <li class="nav-item">
-                <a class="nav-link active" href="#" data-section="dashboard">
+                <a class="nav-link {% if request.endpoint == 'order_details' %}active{% endif %}" href="{{ url_for('order_details') }}">
                     <i class="bi bi-cart"></i> Order Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-section="api-config">
+                <a class="nav-link {% if request.endpoint == 'payment_methods' %}active{% endif %}" href="{{ url_for('payment_methods') }}">
+                    <i class="bi bi-credit-card"></i> Payment Methods
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'api_configuration' %}active{% endif %}" href="{{ url_for('api_configuration') }}">
                     <i class="bi bi-gear"></i> API Configuration
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-section="database">
+                <a class="nav-link {% if request.endpoint == 'database_connection' %}active{% endif %}" href="{{ url_for('database_connection') }}">
                     <i class="bi bi-database"></i> Database Connection
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" data-section="endpoints">
+                <a class="nav-link {% if request.endpoint == 'test_endpoints' %}active{% endif %}" href="{{ url_for('test_endpoints') }}">
                     <i class="bi bi-plug"></i> Test Endpoints
                 </a>
             </li>
@@ -321,15 +167,15 @@
         <div class="mt-4 px-3">
             <h6 class="text-white mb-3">Quick Stats</h6>
             <div class="stat-card">
-                <div class="stat-number">2</div>
+                <div class="stat-number">{{ products|length }}</div>
                 <div class="stat-label">PRODUCTS</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">1</div>
+                <div class="stat-number">{{ payments|length }}</div>
                 <div class="stat-label">PAYMENTS</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">83.75</div>
+                <div class="stat-number" id="sidebar-total">0.00</div>
                 <div class="stat-label">TOTAL</div>
             </div>
         </div>
@@ -337,495 +183,60 @@
         <div class="mt-4 px-3">
             <h6 class="text-white mb-3">Quick Actions</h6>
             <div class="d-grid gap-2">
-                <button class="btn btn-sm btn-outline-light" id="load-default-btn">
+                <a href="{{ url_for('load_default') }}" class="btn btn-sm btn-outline-light">
                     <i class="bi bi-arrow-clockwise"></i> Load Default
-                </button>
-                <button class="btn btn-sm btn-outline-light" id="clear-all-btn">
+                </a>
+                <a href="{{ url_for('clear_all') }}" class="btn btn-sm btn-outline-light">
                     <i class="bi bi-trash"></i> Clear All
-                </button>
-                <button class="btn btn-sm btn-outline-light" id="export-json-btn">
+                </a>
+                <a href="{{ url_for('export_json') }}" class="btn btn-sm btn-outline-light" target="_blank">
                     <i class="bi bi-download"></i> Export JSON
-                </button>
-                <button class="btn btn-sm btn-outline-light" id="send-request-btn">
+                </a>
+                <a href="{{ url_for('api_configuration') }}" class="btn btn-sm btn-outline-light">
                     <i class="bi bi-send"></i> Send Request
-                </button>
+                </a>
             </div>
-        </div>
-
-        <div class="sidebar-footer">
-            <p>Online Order Tool v1.0</p>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Alert Message -->
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            Order details updated successfully!
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
 
-        <!-- Dashboard Section -->
-        <div class="content-section" id="dashboard-section">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Order Information</h5>
-                        </div>
-                        <div class="card-body">
-                            <ul class="nav nav-tabs" id="orderTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="client-tab" data-bs-toggle="tab" data-bs-target="#client" type="button"
-                                            role="tab">Client Info
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button"
-                                            role="tab">Products
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button"
-                                            role="tab">Payments
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button"
-                                            role="tab">Delivery
-                                    </button>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content" id="orderTabContent">
-                                <!-- Client Info Tab -->
-                                <div class="tab-pane fade show active" id="client" role="tabpanel">
-                                    <form class="mt-3" id="client-form">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">First Name</label>
-                                                    <input type="text" class="form-control" name="client_first_name" value="Hossam">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Last Name</label>
-                                                    <input type="text" class="form-control" name="client_last_name" value="Mohamed">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Phone</label>
-                                                    <input type="text" class="form-control" name="client_phone" value="556020500">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Email</label>
-                                                    <input type="email" class="form-control" name="client_email" value="Hossam.Mohamed@dhamesa.com">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label class="form-label">Address</label>
-                                                    <textarea class="form-control" name="order_address" rows="2">Riyadh City</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label class="form-label">Branch Code</label>
-                                                    <input type="text" class="form-control" name="branch_code" value="2000">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label class="form-label">Order Code</label>
-                                                    <input type="text" class="form-control" name="order_code" value="Order_11">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label class="form-label">Status</label>
-                                                    <select class="form-select" name="order_status">
-                                                        <option value="new" selected>New</option>
-                                                        <option value="confirmed">Confirmed</option>
-                                                        <option value="preparing">Preparing</option>
-                                                        <option value="ready">Ready</option>
-                                                        <option value="delivered">Delivered</option>
-                                                        <option value="cancelled">Cancelled</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-end mt-3">
-                                            <button type="button" class="btn btn-primary" id="update-client-btn">
-                                                <i class="bi bi-check-lg"></i> Update Client Info
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <!-- Products Tab -->
-                                <div class="tab-pane fade" id="products" role="tabpanel">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6>Order Products</h6>
-                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                                            <i class="bi bi-plus"></i> Add Product
-                                        </button>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                            <tr>
-                                                <th>Code</th>
-                                                <th>Name</th>
-                                                <th>Qty</th>
-                                                <th>Price</th>
-                                                <th>Total</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr>
-                                                <td>PRD001</td>
-                                                <td>Product One</td>
-                                                <td>2</td>
-                                                <td>25.00</td>
-                                                <td>50.00</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>PRD002</td>
-                                                <td>Product Two</td>
-                                                <td>1</td>
-                                                <td>33.75</td>
-                                                <td>33.75</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Payments Tab -->
-                                <div class="tab-pane fade" id="payments" role="tabpanel">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6>Payment Methods</h6>
-                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                                            <i class="bi bi-plus"></i> Add Payment
-                                        </button>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                            <tr>
-                                                <th>Method</th>
-                                                <th>Amount</th>
-                                                <th>Status</th>
-                                                <th>Transaction ID</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr>
-                                                <td>Credit Card</td>
-                                                <td>83.75</td>
-                                                <td>
-                                                    <span class="badge bg-success">done_payment</span>
-                                                </td>
-                                                <td>TXN123456</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-outline-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- Delivery Tab -->
-                                <div class="tab-pane fade" id="delivery" role="tabpanel">
-                                    <form class="mt-3" id="delivery-form">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Delivery Date</label>
-                                                    <input type="date" class="form-control" name="delivery_date" value="2023-11-15">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label class="form-label">From Time</label>
-                                                    <input type="time" class="form-control" name="delivery_from_time" value="14:00">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label class="form-label">To Time</label>
-                                                    <input type="time" class="form-control" name="delivery_to_time" value="16:00">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Delivery Cost</label>
-                                                    <input type="number" step="0.01" class="form-control" name="order_delivery_cost" value="0.00">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label class="form-label">Fulfillment Plant</label>
-                                                    <input type="text" class="form-control" name="fullfilment_plant" value="Main Plant">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label class="form-label">Additional Address Info</label>
-                                                    <input type="text" class="form-control" name="shipping_address_2"
-                                                           value="Building 5, Apartment 12">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-end mt-3">
-                                            <button type="button" class="btn btn-primary" id="update-delivery-btn">
-                                                <i class="bi bi-check-lg"></i> Update Delivery Info
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary Column -->
-                <div class="col-lg-4">
-                    <div class="card summary-card">
-                        <div class="card-header">
-                            <h5>Order Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Products Total:</span>
-                                <strong id="products-total">83.75</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Discount:</span>
-                                <strong id="order-discount">0.00</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Delivery Cost:</span>
-                                <strong id="delivery-cost">0.00</strong>
-                            </div>
-                            <hr>
-                            <div class="d-flex justify-content-between mb-3">
-                                <span class="fw-bold">Final Total:</span>
-                                <strong class="text-primary fs-5" id="final-total">83.75</strong>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Payment Status</label>
-                                <select class="form-select" id="payment-status-select">
-                                    <option value="not_payment" selected>Not Payment</option>
-                                    <option value="done_payment">Done Payment</option>
-                                    <option value="partial_payment">Partial Payment</option>
-                                    <option value="failed_payment">Failed Payment</option>
-                                </select>
-                            </div>
-
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-success" id="calculate-totals-btn">
-                                    <i class="bi bi-calculator"></i> Calculate Totals
-                                </button>
-                                <button class="btn btn-primary" id="update-order-btn">
-                                    <i class="bi bi-check-circle"></i> Update Order
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h5>API Configuration</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label">Select Endpoint</label>
-                                <select class="form-select" id="api-endpoint-select">
-                                    <option selected>Adam Pharmacy - Production</option>
-                                    <option>Adam Pharmacy - Testing</option>
-                                    <option>Whites Pharmacy - Production</option>
-                                    <option>Whites Pharmacy - Testing</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Or Enter Custom URL</label>
-                                <input type="text" class="form-control" id="custom-url" placeholder="https://api.example.com/endpoint">
-                            </div>
-
-                            <div class="d-grid">
-                                <button class="btn btn-outline-primary" id="test-api-btn">
-                                    <i class="bi bi-plug"></i> Test Connection
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Other Sections (Initially Hidden) -->
-        <div class="content-section d-none" id="api-config-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5>API Configuration</h5>
-                </div>
-                <div class="card-body">
-                    <p>API configuration details will be displayed here.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="content-section d-none" id="database-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Database Connection</h5>
-                </div>
-                <div class="card-body">
-                    <p>Database connection details will be displayed here.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="content-section d-none" id="endpoints-section">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Test Endpoints</h5>
-                </div>
-                <div class="card-body">
-                    <p>Endpoint testing details will be displayed here.</p>
-                </div>
-            </div>
-        </div>
+        {% block content %}{% endblock %}
     </div>
-</div>
-
-<!-- Action Buttons -->
-<div class="action-buttons">
-    <button class="btn btn-primary action-btn rounded-circle">
-        <i class="bi bi-save"></i>
-    </button>
-    <button class="btn btn-success action-btn rounded-circle">
-        <i class="bi bi-send"></i>
-    </button>
-    <button class="btn btn-info action-btn rounded-circle">
-        <i class="bi bi-download"></i>
-    </button>
 </div>
 
 <!-- Bootstrap & jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Custom JavaScript -->
 <script>
-    // Handle navigation
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Remove active class from all links
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-            // Add active class to clicked link
-            this.classList.add('active');
-
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.add('d-none');
-            });
-
-            // Show the selected section
-            const sectionId = this.getAttribute('data-section') + '-section';
-            document.getElementById(sectionId).classList.remove('d-none');
+    // Update sidebar total
+    function updateSidebarTotal() {
+        $.get('{{ url_for("calculate_totals") }}', function(data) {
+            if (!data.error) {
+                $('#sidebar-total').text(data.final_total.toFixed(2));
+            }
         });
-    });
+    }
 
-    // Button event handlers
-    document.getElementById('update-client-btn').addEventListener('click', function() {
-        alert('Client information updated successfully!');
-    });
-
-    document.getElementById('update-delivery-btn').addEventListener('click', function() {
-        alert('Delivery information updated successfully!');
-    });
-
-    document.getElementById('calculate-totals-btn').addEventListener('click', function() {
-        alert('Totals calculated successfully!');
-    });
-
-    document.getElementById('update-order-btn').addEventListener('click', function() {
-        alert('Order updated successfully!');
-    });
-
-    document.getElementById('test-api-btn').addEventListener('click', function() {
-        const endpoint = document.getElementById('api-endpoint-select').value;
-        alert('Testing connection to: ' + endpoint);
-    });
-
-    // Quick action buttons
-    document.getElementById('load-default-btn').addEventListener('click', function() {
-        if (confirm('Are you sure you want to load default data?')) {
-            alert('Default data loaded successfully!');
-        }
-    });
-
-    document.getElementById('clear-all-btn').addEventListener('click', function() {
-        if (confirm('Are you sure you want to clear all data?')) {
-            alert('All data cleared successfully!');
-        }
-    });
-
-    document.getElementById('export-json-btn').addEventListener('click', function() {
-        alert('JSON export functionality would be implemented here.');
-    });
-
-    document.getElementById('send-request-btn').addEventListener('click', function() {
-        alert('Sending request to API...');
+    // Update on page load
+    $(document).ready(function() {
+        updateSidebarTotal();
     });
 </script>
+
+{% block scripts %}{% endblock %}
 </body>
 </html>
