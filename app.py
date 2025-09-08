@@ -160,7 +160,7 @@ def add_product():
 
         # Calculate values
         subtotal = quantity * unit_price
-        vat_amount = subtotal * (vat_percentage / 100)
+        vat_amount = subtotal * vat_percentage
         net_total = subtotal - discount + vat_amount
 
         product = {
@@ -595,8 +595,8 @@ def get_item_details():
         SELECT TOP 1 
             I.MaterialNumber,
             IUOMB.UniversalBarCode,
-            I.Name AS EnglishName,
-            I.NativeName AS ArabicName,
+            I.Name AS EnglishName,        -- This should be English
+            I.NativeName AS ArabicName,   -- This should be Arabic
             IP.Price AS UnitPrice,
             TT.Rate AS VatRate,
             CAST(ROUND(((IP.Price * TT.Rate)/100) + IP.Price, 2) AS DECIMAL(10,2)) AS NetPrice
@@ -637,8 +637,8 @@ def get_item_details():
         item_details = {
             'item_code': row[0] if row[0] else f"000000000000{material_number}",
             'item_Barcode': row[1] if row[1] else f"BC{material_number}",
-            'item_EN_Name': row[2] if row[2] else f"Item {material_number}",
-            'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",
+            'item_EN_Name': row[2] if row[2] else f"Item {material_number}",  # English name
+            'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",  # Arabic name
             'unit_price': float(row[4]) if row[4] else 0.0,
             'vat_percentage': float(row[5]) if row[5] else 0.0,
             'net_price': float(row[6]) if row[6] else 0.0
@@ -822,16 +822,19 @@ def add_product_from_db():
     try:
         data = request.get_json()
 
+        # Convert VAT percentage from 15 to 0.15
+        vat_percentage = float(data['vat_percentage']) / 100 if float(data['vat_percentage']) > 1 else float(data['vat_percentage'])
+
         product = {
             "item_code": data['item_code'],
             "item_name": data['item_name'],
             "quantity": 1.0,  # Default quantity
             "unit_price": float(data['unit_price']),
-            "vat_percentage": float(data['vat_percentage']),
+            "vat_percentage": vat_percentage,  # Use converted value
             "row_total_discount": 0.0,
-            "total_vat_amount": float(data['unit_price']) * (float(data['vat_percentage']) / 100),
-            "row_net_total": float(data['unit_price']) + (float(data['unit_price']) * (float(data['vat_percentage']) / 100)),
-            "unit_vat_amount": float(data['unit_price']) * (float(data['vat_percentage']) / 100),
+            "total_vat_amount": float(data['unit_price']) * vat_percentage,
+            "row_net_total": float(data['unit_price']) + (float(data['unit_price']) * vat_percentage),
+            "unit_vat_amount": float(data['unit_price']) * vat_percentage,
             "offer_code": "",
             "offer_message": ""
         }
@@ -875,11 +878,11 @@ def prepare_order_data():
     products = session.get('products', [])
     payments = session.get('payments', [])
 
-    # Calculate totals
-    order_product_total_value = sum(product.get('row_net_total', 0) for product in products)
-    order_total_discount = sum(product.get('row_total_discount', 0) for product in products)
-    delivery_cost = order_data.get('order_delivery_cost', 0)
-    order_final_total_value = order_product_total_value + delivery_cost
+    # Calculate totals with 2 decimal places
+    order_product_total_value = round(sum(product.get('row_net_total', 0) for product in products), 2)
+    order_total_discount = round(sum(product.get('row_total_discount', 0) for product in products), 2)
+    delivery_cost = round(order_data.get('order_delivery_cost', 0), 2)
+    order_final_total_value = round(order_product_total_value + delivery_cost, 2)
 
     # Format time values for API compatibility - ensure proper format
     delivery_from_time = order_data.get('delivery_from_time', '')
@@ -935,6 +938,21 @@ def prepare_order_data():
         "fullfilment_plant": order_data.get('fullfilment_plant', '')
     }
 
+    # Ensure all numeric values in products have 2 decimal places
+    for product in final_order_data['order_products']:
+        for key, value in product.items():
+            if isinstance(value, float):
+                product[key] = round(value, 2)
+
+    # Ensure all numeric values in payments have 2 decimal places
+    for payment in final_order_data['payment_methods_with_options']:
+        for key, value in payment.items():
+            if isinstance(value, float):
+                payment[key] = round(value, 2)
+            elif key == 'credit_customer_info' and value:
+                # Handle nested customer info if needed
+                pass
+
     final_order_data = {k: v for k, v in final_order_data.items() if v is not None}
 
     return final_order_data
@@ -956,9 +974,21 @@ def validate_order_data(order_data):
     if not order_data.get('order_products'):
         errors.append("No products in the order")
 
-    # Payment validation if order requires payment
-    if order_data.get('order_final_total_value', 0) > 0 and not order_data.get('payment_methods_with_options'):
+    # Payment validation - only required if order has value and not cash on delivery
+    order_total = order_data.get('order_final_total_value', 0)
+    order_payment_status = order_data.get('order_payment_status', '')
+
+    if order_total > 0 and order_payment_status != 'not_payment' and not order_data.get('payment_methods_with_options'):
         errors.append("Order has value but no payment methods")
+
+    # For PostToCredit with not_payment status, we still need payment info
+    has_post_to_credit = any(
+        payment.get('payment_method') == 'PostToCredit'
+        for payment in order_data.get('payment_methods_with_options', [])
+    )
+
+    if order_total > 0 and order_payment_status == 'not_payment' and not has_post_to_credit:
+        errors.append("For 'not_payment' status with order value, PostToCredit payment method is required")
 
     return errors
 
