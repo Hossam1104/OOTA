@@ -231,9 +231,31 @@
         });
     }
 
-    // Update on page load
+    // Set current date and time on page load
     $(document).ready(function() {
         updateSidebarTotal();
+
+        // Set current date for delivery date field
+        const now = new Date();
+        const currentDate = now.toISOString().split('T')[0];
+        const currentTime = now.toTimeString().split(' ')[0];
+
+        // Set delivery date to today if empty
+        if (!$('input[name="delivery_date"]').val()) {
+            $('input[name="delivery_date"]').val(currentDate);
+        }
+
+        // Set delivery from time to current time if empty
+        if (!$('input[name="delivery_from_time"]').val()) {
+            $('input[name="delivery_from_time"]').val(currentTime);
+        }
+
+        // Set delivery to time to current time + 1 hour if empty
+        if (!$('input[name="delivery_to_time"]').val()) {
+            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+            const toTime = oneHourLater.toTimeString().split(' ')[0];
+            $('input[name="delivery_to_time"]').val(toTime);
+        }
     });
 </script>
 

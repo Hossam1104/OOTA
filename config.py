@@ -28,17 +28,17 @@ PAYMENT_OPTIONS = {
 
 # Updated Default data
 DEFAULT_DATA = {
-    "branch_code": "2000",
-    "order_code": "Order_1",
+    "branch_code": "4000",
+    "order_code": "Order_7",
     "parent_order_code": "",
-    "order_creation_date": "2025-05-18T12:23:10.323Z",
+    "order_creation_date": "2025-09-08T17:00:11.000Z",
     "order_notes": "Don't Ring the bell",
     "order_product_total_value": 73.75,
     "is_delivery": 1,
     "order_delivery_cost": 10.0,
     "order_total_discount": 45.0,
     "order_final_total_value": 83.75,
-    "order_payment_method": "PostToCredit",
+    "order_payment_method": "MisPay",
     "order_status": "new",
     "client_country_code": "966",
     "client_phone": "556028080",
@@ -49,57 +49,77 @@ DEFAULT_DATA = {
     "client_birthdate": "1989-04-11T12:23:10.323Z",
     "client_gender": "Male",
     "order_address": "Tabarak City",
-    "address_code": "1104",
-    "order_country_code": "966",
-    "order_phone": "556028080",
-    "order_payment_status": "not_payment",
-    "order_gps": [29.980759787217856, 31.33627436833347],
-    "delivery_date": "2025-09-01",
-    "delivery_from_time": "12:23:10.323",
-    "delivery_to_time": "03:23:10",
-    "shipping_address_2": "Cairo",
-    "fullfilment_plant": "1000",
+    "address_code": "",
+    "order_country_code": "null",
+    "order_phone": "null",
+    "order_payment_status": "partially_paid",
+    "order_gps": [
+        21.779006345949554,
+        39.08578576461103
+    ],
     "order_products": [
         {
             "item_code": "000000000000021252",
             "item_name": "J&J Tb Reach Interdntl Full Me",
-            "quantity": 2.0,
-            "unit_price": 11.00,
-            "unit_vat_amount": 0.0,
-            "total_vat_amount": 0.0,
-            "vat_percentage": 0.0,
             "offer_code": "",
             "offer_message": "",
+            "quantity": 2.0,
+            "row_net_total": 22.0,
             "row_total_discount": 0.0,
-            "row_net_total": 22.0
+            "total_vat_amount": 0.0,
+            "unit_price": 11.0,
+            "unit_vat_amount": 0.0,
+            "vat_percentage": 0.0
         },
         {
             "item_code": "000000000000021241",
             "item_name": "The Balm Meet Matt Hughes - Brilliant",
-            "quantity": 1.0,
-            "unit_price": 90.00,
-            "unit_vat_amount": 6.75,
-            "total_vat_amount": 6.75,
-            "vat_percentage": 0.15,
             "offer_code": "000000000011",
             "offer_message": "Buy One Get One",
+            "quantity": 1.0,
+            "row_net_total": 51.75,
             "row_total_discount": 45.0,
-            "row_net_total": 51.75
+            "total_vat_amount": 6.75,
+            "unit_price": 90.0,
+            "unit_vat_amount": 6.75,
+            "vat_percentage": 0.15
         }
     ],
     "payment_methods_with_options": [
         {
-            "payment_method": "PostToCredit",
-            "payment_amount": 83.75,
+            "payment_method": "visa",
+            "payment_amount": 25.00,
             "transaction_id": "",
-            "payment_option": "",
+            "payment_option": "visa",
             "card_name": "null",
             "bank_code": "null",
             "option_commission": 0.0,
-            "credit_customer_info": {
-                "customer_number": "0057000096",
-                "customer_name": "Moller Customer"
-            }
+            "credit_customer_info": "null"
+        },
+        {
+            "payment_method": "tamara",
+            "payment_amount": 25.0,
+            "transaction_id": "",
+            "payment_option": "tamara",
+            "card_name": "null",
+            "bank_code": "null",
+            "option_commission": 0.0,
+            "credit_customer_info": "null"
+        },
+        {
+            "payment_method": "points",
+            "payment_amount": 33.75,
+            "transaction_id": "",
+            "payment_option": "points",
+            "card_name": "null",
+            "bank_code": "null",
+            "option_commission": 0.0,
+            "credit_customer_info": "null"
         }
-    ]
+    ],
+    "delivery_date": "CURRENT_DATE",
+    "delivery_from_time": "CURRENT_TIME",
+    "delivery_to_time": "CURRENT_TIME_PLUS_1H",
+    "shipping_address_2": "Cairo",
+    "fullfilment_plant": "1000"
 }

@@ -100,7 +100,6 @@
     </div>
 </div>
 {% endblock %}
-
 {% block scripts %}
 <script>
     $(document).ready(function() {
@@ -180,8 +179,8 @@
                                 <table class="table table-striped">
                                     <tr><th>Item Code</th><td>${response.item_code}</td></tr>
                                     <tr><th>Barcode</th><td>${response.item_Barcode}</td></tr>
-                                    <tr><th>English Name</th><td>${response.item_EN_Name}</td></tr>
-                                    <tr><th>Arabic Name</th><td>${response.item_AR_Name}</td></tr>
+                                    <tr><th>English Name</th><td>${response.item_AR_Name}</td></tr>
+                                    <tr><th>Arabic Name</th><td>${response.item_EN_Name}</td></tr>
                                     <tr><th>Unit Price</th><td>${response.unit_price.toFixed(2)} SAR</td></tr>
                                     <tr><th>VAT %</th><td>${response.vat_percentage}%</td></tr>
                                     <tr><th>Net Price</th><td>${response.net_price.toFixed(2)} SAR</td></tr>
@@ -207,7 +206,7 @@
             });
         });
 
-        // Add to cart functionality
+        // Add to cart functionality - FIXED: Use direct URL instead of url_for
         $(document).on('click', '.add-to-cart', function() {
             const itemCode = $(this).data('item-code');
             const itemName = $(this).data('item-name');
@@ -215,7 +214,7 @@
             const vatPercentage = $(this).data('vat-percentage');
 
             $.ajax({
-                url: '{{ url_for("add_product_from_db") }}',
+                url: '/add-product-from-db',  // Direct URL
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({

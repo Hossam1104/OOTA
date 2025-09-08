@@ -1,7 +1,7 @@
 import json
 import os
 import socket
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 import pyodbc
@@ -65,6 +65,26 @@ def before_request():
     # Initialize session data with defaults or saved values
     if 'order_data' not in session:
         session['order_data'] = session.get('saved_order_data', DEFAULT_DATA.copy())
+
+    # Set current date and time for delivery fields if they're empty or default
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_time = datetime.now().strftime("%H:%M:%S")
+    one_hour_later = (datetime.now() + timedelta(hours=1)).strftime("%H:%M:%S")
+
+    # Check if delivery fields need to be updated
+    order_data = session['order_data']
+
+    if not order_data.get('delivery_date') or order_data.get('delivery_date') in ['CURRENT_DATE', '']:
+        order_data['delivery_date'] = current_date
+
+    if not order_data.get('delivery_from_time') or order_data.get('delivery_from_time') in ['CURRENT_TIME', '']:
+        order_data['delivery_from_time'] = current_time
+
+    if not order_data.get('delivery_to_time') or order_data.get('delivery_to_time') in ['CURRENT_TIME_PLUS_1H', '']:
+        order_data['delivery_to_time'] = one_hour_later
+
+    # Update the session
+    session['order_data'] = order_data
 
     if 'products' not in session:
         session['products'] = session.get('saved_products', DEFAULT_DATA['order_products'].copy())
@@ -148,46 +168,6 @@ def test_endpoints():
             }
 
     return render_template('test_endpoints.html', results=results, api_urls=API_URLS)
-
-
-@app.route('/add-product', methods=['POST'])
-def add_product():
-    try:
-        quantity = float(request.form.get('quantity', 0))
-        unit_price = float(request.form.get('unit_price', 0))
-        vat_percentage = float(request.form.get('vat_percentage', 0))
-        discount = float(request.form.get('discount', 0))
-
-        # Calculate values
-        subtotal = quantity * unit_price
-        vat_amount = subtotal * vat_percentage
-        net_total = subtotal - discount + vat_amount
-
-        product = {
-            "item_code": request.form.get('item_code'),
-            "item_name": request.form.get('item_name'),
-            "quantity": quantity,
-            "unit_price": unit_price,
-            "vat_percentage": vat_percentage,
-            "row_total_discount": discount,
-            "total_vat_amount": vat_amount,
-            "row_net_total": net_total,
-            "unit_vat_amount": vat_amount / quantity if quantity > 0 else 0,
-            "offer_code": request.form.get('offer_code', ''),
-            "offer_message": request.form.get('offer_message', '')
-        }
-
-        products = session.get('products', [])
-        products.append(product)
-        session['products'] = products
-        session['saved_products'] = products
-
-        flash('Product added successfully!', 'success')
-        return redirect(url_for('order_details'))
-
-    except Exception as e:
-        flash(f'Error adding product: {str(e)}', 'danger')
-        return redirect(url_for('order_details'))
 
 
 @app.route('/remove-product/<int:index>')
@@ -342,9 +322,21 @@ def export_json():
 @app.route('/load-default')
 def load_default():
     try:
-        session['order_data'] = DEFAULT_DATA.copy()
-        session['products'] = DEFAULT_DATA['order_products'].copy()
-        session['payments'] = DEFAULT_DATA['payment_methods_with_options'].copy()
+        # Create a copy of DEFAULT_DATA but with current date/time
+        default_data = DEFAULT_DATA.copy()
+
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_time = datetime.now().strftime("%H:%M:%S")
+        one_hour_later = (datetime.now() + timedelta(hours=1)).strftime("%H:%M:%S")
+
+        # Update delivery fields with current values
+        default_data['delivery_date'] = current_date
+        default_data['delivery_from_time'] = current_time
+        default_data['delivery_to_time'] = one_hour_later
+
+        session['order_data'] = default_data
+        session['products'] = default_data['order_products'].copy()
+        session['payments'] = default_data['payment_methods_with_options'].copy()
 
         # Clear saved data
         session.pop('saved_order_data', None)
@@ -362,6 +354,10 @@ def load_default():
 @app.route('/clear-all')
 def clear_all():
     try:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_time = datetime.now().strftime("%H:%M:%S")
+        one_hour_later = (datetime.now() + timedelta(hours=1)).strftime("%H:%M:%S")
+
         session['order_data'] = {
             "branch_code": "",
             "order_code": "",
@@ -369,9 +365,9 @@ def clear_all():
             "is_delivery": 1,
             "order_status": "new",
             "order_payment_status": "not_payment",
-            "delivery_date": datetime.now().strftime("%Y-%m-%d"),
-            "delivery_from_time": "",
-            "delivery_to_time": "",
+            "delivery_date": current_date,  # Set to current date
+            "delivery_from_time": current_time,  # Set to current time
+            "delivery_to_time": one_hour_later,  # Set to current time + 1 hour
             "shipping_address_2": "",
             "fullfilment_plant": "",
             "client_first_name": "",
@@ -379,7 +375,7 @@ def clear_all():
             "client_last_name": "",
             "client_phone": "",
             "client_email": "",
-            "client_birthdate": "1992-07-30T12:23:10.323Z",
+            "client_birthdate": "1989-04-11T12:00:00.000Z",  # Keep default birthday
             "client_gender": "Male",
             "order_address": ""
         }
@@ -638,7 +634,7 @@ def get_item_details():
             'item_code': row[0] if row[0] else f"000000000000{material_number}",
             'item_Barcode': row[1] if row[1] else f"BC{material_number}",
             'item_EN_Name': row[2] if row[2] else f"Item {material_number}",  # English name
-            'item_AR_Name': row[3] if row[3] else f"صنف {material_number}",  # Arabic name
+            'item_AR_Name': row[3] if row[3] else f" صنف{material_number}",  # Arabic name
             'unit_price': float(row[4]) if row[4] else 0.0,
             'vat_percentage': float(row[5]) if row[5] else 0.0,
             'net_price': float(row[6]) if row[6] else 0.0
@@ -659,6 +655,8 @@ def update_product(index):
         if request.method == 'GET':
             if 0 <= index < len(products):
                 product = products[index]
+                # Convert decimal VAT back to percentage for display
+                product['vat_percentage'] = product['vat_percentage'] * 100
                 return jsonify(product)
             else:
                 return jsonify({'error': 'Invalid product index'}), 404
@@ -666,12 +664,18 @@ def update_product(index):
         # POST request - update product
         quantity = float(request.form.get('quantity', 0))
         unit_price = float(request.form.get('unit_price', 0))
-        vat_percentage = float(request.form.get('vat_percentage', 0))
+
+        # Handle VAT percentage input (both 15 and 0.15 formats)
+        vat_input = request.form.get('vat_percentage', '0')
+        vat_percentage = float(vat_input)
+        if vat_percentage > 1:  # If it's in percentage format (e.g., 15)
+            vat_percentage = vat_percentage / 100  # Convert to decimal (0.15)
+
         discount = float(request.form.get('discount', 0))
 
         # Calculate values
         subtotal = quantity * unit_price
-        vat_amount = subtotal * (vat_percentage / 100)
+        vat_amount = subtotal * vat_percentage
         net_total = subtotal - discount + vat_amount
 
         product = {
@@ -822,15 +826,17 @@ def add_product_from_db():
     try:
         data = request.get_json()
 
-        # Convert VAT percentage from 15 to 0.15
-        vat_percentage = float(data['vat_percentage']) / 100 if float(data['vat_percentage']) > 1 else float(data['vat_percentage'])
+        # Convert VAT percentage from 15 to 0.15 if needed
+        vat_percentage = float(data['vat_percentage'])
+        if vat_percentage > 1:  # If it's in percentage format (e.g., 15)
+            vat_percentage = vat_percentage / 100  # Convert to decimal (0.15)
 
         product = {
             "item_code": data['item_code'],
             "item_name": data['item_name'],
             "quantity": 1.0,  # Default quantity
             "unit_price": float(data['unit_price']),
-            "vat_percentage": vat_percentage,  # Use converted value
+            "vat_percentage": vat_percentage,
             "row_total_discount": 0.0,
             "total_vat_amount": float(data['unit_price']) * vat_percentage,
             "row_net_total": float(data['unit_price']) + (float(data['unit_price']) * vat_percentage),
@@ -848,6 +854,94 @@ def add_product_from_db():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# @app.route('/add-product', methods=['POST'])
+# def add_product():
+#     try:
+#         quantity = float(request.form.get('quantity', 0))
+#         unit_price = float(request.form.get('unit_price', 0))
+#         vat_percentage = float(request.form.get('vat_percentage', 0))
+#         discount = float(request.form.get('discount', 0))
+#
+#         # Calculate values
+#         subtotal = quantity * unit_price
+#         vat_amount = subtotal * vat_percentage
+#         net_total = subtotal - discount + vat_amount
+#
+#         product = {
+#             "item_code": request.form.get('item_code'),
+#             "item_name": request.form.get('item_name'),
+#             "quantity": quantity,
+#             "unit_price": unit_price,
+#             "vat_percentage": vat_percentage,
+#             "row_total_discount": discount,
+#             "total_vat_amount": vat_amount,
+#             "row_net_total": net_total,
+#             "unit_vat_amount": vat_amount / quantity if quantity > 0 else 0,
+#             "offer_code": request.form.get('offer_code', ''),
+#             "offer_message": request.form.get('offer_message', '')
+#         }
+#
+#         products = session.get('products', [])
+#         products.append(product)
+#         session['products'] = products
+#         session['saved_products'] = products
+#
+#         flash('Product added successfully!', 'success')
+#         return redirect(url_for('order_details'))
+#
+#     except Exception as e:
+#         flash(f'Error adding product: {str(e)}', 'danger')
+#         return redirect(url_for('order_details'))
+
+
+@app.route('/add-product', methods=['POST'])
+def add_product():
+    try:
+
+        quantity = float(request.form.get('quantity', 0))
+        unit_price = float(request.form.get('unit_price', 0))
+
+        # Handle VAT percentage input (both 15 and 0.15 formats)
+        vat_input = request.form.get('vat_percentage', '0')
+        vat_percentage = float(vat_input)
+        if vat_percentage > 1:  # If it's in percentage format (e.g., 15)
+            vat_percentage = vat_percentage / 100  # Convert to decimal (0.15)
+
+        discount = float(request.form.get('discount', 0))
+
+        # Calculate values
+        subtotal = quantity * unit_price
+        vat_amount = round(subtotal * vat_percentage, 2)
+        net_total = round(subtotal - discount + vat_amount, 2)
+        # unit_vat_amount = round(vat_amount / quantity, 2) if quantity > 0 else 0
+
+        product = {
+            "item_code": request.form.get('item_code'),
+            "item_name": request.form.get('item_name'),
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "vat_percentage": vat_percentage,  # Store as decimal
+            "row_total_discount": discount,
+            "total_vat_amount": vat_amount,
+            "row_net_total": net_total,
+            "unit_vat_amount": vat_amount / quantity if quantity > 0 else 0,
+            "offer_code": request.form.get('offer_code', ''),
+            "offer_message": request.form.get('offer_message', '')
+        }
+
+        products = session.get('products', [])
+        products.append(product)
+        session['products'] = products
+        session['saved_products'] = products
+
+        flash('Product added successfully!', 'success')
+        return redirect(url_for('order_details'))
+
+    except Exception as e:
+        flash(f'Error adding product: {str(e)}', 'danger')
+        return redirect(url_for('order_details'))
 
 
 def save_json_file(order_data):
