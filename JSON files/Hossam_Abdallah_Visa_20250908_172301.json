@@ -1,0 +1,77 @@
+{
+  "branch_code": "P323",
+  "order_code": "Order_001",
+  "parent_order_code": "",
+  "order_creation_date": "2025-09-08T17:23:01.041936Z",
+  "order_notes": "Don't Ring the bell",
+  "order_product_total_value": 65.41,
+  "is_delivery": 1,
+  "order_delivery_cost": 10.0,
+  "order_total_discount": 0.0,
+  "order_final_total_value": 75.41,
+  "order_payment_method": "Visa",
+  "order_status": "new",
+  "client_country_code": "966",
+  "client_phone": "556028080",
+  "client_first_name": "Hossam",
+  "client_middle_name": "Mohamed",
+  "client_last_name": "Abdallah",
+  "client_email": "Hossam.Mohamed@dbsmena.com",
+  "client_birthdate": "1989-04-11T12:23:10.323Z",
+  "client_gender": "Male",
+  "order_address": "Tabarak City",
+  "address_code": "",
+  "order_country_code": "null",
+  "order_phone": "null",
+  "order_payment_status": "partially_paid",
+  "order_gps": [
+    21.779006345949554,
+    39.08578576461103
+  ],
+  "order_products": [
+    {
+      "item_code": "100071",
+      "item_name": "Alfacort 15Gm Ointment",
+      "offer_code": "",
+      "offer_message": "",
+      "quantity": 1.0,
+      "row_net_total": 8.2,
+      "row_total_discount": 0.0,
+      "total_vat_amount": 0.0,
+      "unit_price": 8.2,
+      "unit_vat_amount": 0.0,
+      "vat_percentage": 0.0
+    },
+    {
+      "item_code": "100126",
+      "item_name": "Analax Plus Ointment 50Ml",
+      "offer_code": "",
+      "offer_message": "",
+      "quantity": 1.0,
+      "row_net_total": 57.21,
+      "row_total_discount": 0.0,
+      "total_vat_amount": 7.46,
+      "unit_price": 49.75,
+      "unit_vat_amount": 7.46,
+      "vat_percentage": 0.15
+    }
+  ],
+  "payment_methods_with_options": [
+    {
+      "bank_code": "",
+      "card_name": "",
+      "credit_customer_info": null,
+      "option_commission": 0.0,
+      "payment_amount": 50.0,
+      "payment_method": "Visa",
+      "payment_option": "",
+      "payment_status": "done_payment",
+      "transaction_id": ""
+    }
+  ],
+  "delivery_date": "2025-09-08",
+  "delivery_from_time": "17:04:56",
+  "delivery_to_time": "18:04:56",
+  "shipping_address_2": "Cairo",
+  "fullfilment_plant": "1000"
+}
